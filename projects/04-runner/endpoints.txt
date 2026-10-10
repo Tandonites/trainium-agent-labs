@@ -1,0 +1,5 @@
+# One vLLM server per line. Every teammate runs ./serve.sh in their own seat first.
+# From inside a seat pod, other seats are reachable by name (headless service "seat"):
+http://localhost:8000
+# http://seat-122.seat.default.svc.cluster.local:8000
+# http://seat-123.seat.default.svc.cluster.local:8000
