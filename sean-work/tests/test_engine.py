@@ -155,12 +155,17 @@ always @(posedge tick) begin
   if (clear) begin count <= #0.8 0; odd <= #0.8 0; end
   else begin count <= #0.8 count + step; odd <= #0.8 ((count + step) & 1); end
 end
-// Catch any probe that changes stimulus at a rising edge or while clock is high.
-always @(step or clear) if (tick) $fatal(1, "stimulus changed with clock high");
 endmodule
 '''
         path = self.design('counter', source)
-        with mock.patch.dict(checker.PROBLEMS, {'counter': p}):
+        original_probe = checker._probe
+        def guarded_probe(problem):
+            harness, samples = original_probe(problem)
+            # Checker-owned assertions belong in the trusted testbench, not DUTs.
+            guard = 'always @(step or clear) if (tick) $fatal(1, "stimulus changed with clock high");\n'
+            return harness.replace('endmodule', guard + 'endmodule'), samples
+        with mock.patch.dict(checker.PROBLEMS, {'counter': p}), \
+             mock.patch.object(checker, '_probe', side_effect=guarded_probe):
             self.assertEqual(self.grade('counter', path), (1., 'correct'))
             harness, samples = checker._probe(p)
             self.assertFalse(any(s['kind'] == 'initial_immediate' for s in samples))
@@ -178,9 +183,11 @@ endmodule
     def test_early_finish_and_official_failure_do_not_pass(self):
         path = self.design('early_finish', SEQ_REFERENCE.read_text().replace(
             '  reg [2:0] idx;', '  reg [2:0] idx; initial #12 $finish;'))
-        score, feedback = self.grade('sequence_generator', path)
+        measured = {}
+        score, feedback = self.grade('sequence_generator', path, result=measured)
         self.assertLess(score, 1.)
-        self.assertIn('not observed (the simulation ended early)', feedback)
+        self.assertEqual(measured['status'], 'invalid_candidate')
+        self.assertIn('simulator control', feedback)
         with mock.patch.object(checker, '_official_ok', return_value=False):
             score, feedback = self.grade('sequence_generator', SEQ_REFERENCE)
         self.assertEqual(score, .9)
@@ -191,7 +198,8 @@ endmodule
         failed = subprocess.CompletedProcess([], 1, stdout='', stderr='bad syntax')
         compiled = subprocess.CompletedProcess([], 0, stdout='', stderr='')
         for responses, expected in [([failed], 0.), ([compiled, subprocess.TimeoutExpired('vvp', 1)], .1)]:
-            with mock.patch.object(checker.subprocess, 'run', side_effect=responses):
+            with mock.patch.object(checker.subprocess, 'run', side_effect=responses), \
+                 mock.patch.object(checker.check_result, 'port_errors', return_value=[]):
                 score, feedback = self.grade('sequence_generator', SEQ_REFERENCE)
             self.assertEqual(score, expected)
             self.assertIn('Principle:', feedback)
