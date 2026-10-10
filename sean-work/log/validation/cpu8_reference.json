@@ -1,0 +1,102 @@
+{
+  "reference_score": 1.0,
+  "official_testbench_pass": true,
+  "ports": [
+    [
+      "clk",
+      "input",
+      1
+    ],
+    [
+      "reset_n",
+      "input",
+      1
+    ],
+    [
+      "enable",
+      "input",
+      1
+    ],
+    [
+      "instruction",
+      "input",
+      8
+    ],
+    [
+      "acc",
+      "output",
+      8
+    ],
+    [
+      "pc",
+      "output",
+      8
+    ],
+    [
+      "data_out",
+      "output",
+      8
+    ],
+    [
+      "carry",
+      "output",
+      1
+    ],
+    [
+      "halted",
+      "output",
+      1
+    ]
+  ],
+  "bad_designs": {
+    "sync_reset": {
+      "score": 0.7,
+      "feedback": "reset_immediate: requirement: while reset_n is 0, acc must equal the initial state at every moment, including before the first clock edge. Observed: at cycle 0, acc is undefined (X).\nIn your design, acc is assigned in 1 place(s): line 15, a block triggered by posedge clk.\nreset_midrun: requirement: reset during a run must restore the initial state immediately, hold it across a clock edge, and restart the specified sequence after release. Observed: at cycle 446, pc is wrong in bit(s) [3, 1, 0]; the other 5 bits are correct. Context: 11 cycles after enable went high; 11 cycles after instruction changed.\nIn your design, pc is assigned in 1 place(s): line 15, a block triggered by posedge clk.\nreset_restart: requirement: reset with either input level must restore and restart the specified behavior. Observed: at cycle 420, acc is wrong in bit(s) [3]; the other 7 bits are correct. Context: 29 cycles after enable went high; 12 cycles after instruction changed.\nIn your design, acc is assigned in 1 place(s): line 15, a block triggered by posedge clk."
+    },
+    "ignores_enable": {
+      "score": 0.75,
+      "feedback": "random: requirement: every output must follow the specified behavior for the sampled inputs. Observed: at cycle 261, pc is wrong in bit(s) [2, 1, 0]; the other 5 bits are correct. Context: 1 cycle after enable went low; 1 cycle after instruction changed.\ntoggles: requirement: input changes and holds must follow the specified behavior. Observed: at cycle 387, pc is wrong in bit(s) [4, 3]; the other 6 bits are correct. Context: 2 cycles after enable went low; 1 cycle after instruction changed."
+    },
+    "carry_stuck_low": {
+      "score": 0.9,
+      "feedback": "official: requirement: the benchmark testbench must pass. Observed: the benchmark testbench failed."
+    },
+    "clears_carry_on_load": {
+      "score": 0.9,
+      "feedback": "official: requirement: the benchmark testbench must pass. Observed: the benchmark testbench failed."
+    },
+    "halt_advances_pc": {
+      "score": 0.75,
+      "feedback": "random: requirement: every output must follow the specified behavior for the sampled inputs. Observed: at cycle 275, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 1 cycle after enable went high; 1 cycle after instruction changed.\ntoggles: requirement: input changes and holds must follow the specified behavior. Observed: at cycle 387, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 2 cycles after enable went low; 1 cycle after instruction changed."
+    },
+    "unknown_opcodes_reset_pc": {
+      "score": 0.3,
+      "feedback": "reset_midrun: requirement: reset during a run must restore the initial state immediately, hold it across a clock edge, and restart the specified sequence after release. Observed: at cycle 449, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 14 cycles after enable went high; 14 cycles after instruction changed.\nfirst_step: requirement: the first rising edge after reset must follow the specified behavior. Observed: at cycle 3, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 1 cycle after enable went high; 1 cycle after instruction changed.\nsequence: requirement: every output must follow the specified behavior on each rising edge. Observed: at cycle 3, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 1 cycle after enable went high; 1 cycle after instruction changed.\nrandom: requirement: every output must follow the specified behavior for the sampled inputs. Observed: at cycle 260, pc is wrong in bit(s) [1, 0]; the other 6 bits are correct. Context: 258 cycles after enable went high; 1 cycle after instruction changed.\ntoggles: requirement: input changes and holds must follow the specified behavior. Observed: at cycle 387, pc is wrong in bit(s) [3, 1]; the other 6 bits are correct. Context: 2 cycles after enable went low; 1 cycle after instruction changed.\nreset_restart: requirement: reset with either input level must restore and restart the specified behavior. Observed: at cycle 423, pc is wrong in bit(s) [0]; the other 7 bits are correct. Context: 32 cycles after enable went high; 15 cycles after instruction changed."
+    }
+  },
+  "original_core_sha256": {
+    "checker.py": "9bf9b16d036fe8014be4465166a23a596dbb4724c3bbddd940c9917d933c73d8",
+    "agent.py": "0f882eba37278768e7c3ac71ea4129147f1412e8a1608694be0ad2829390af08",
+    "taxonomy.py": "dd8e2b8f2e2047739df054441a32400b53205590845806a396be96517f61f853",
+    "knowledge.json": "39ac6f0b5cd066f5459aab1811fc4913b7a4bb19c2caad69e025ab53bc1fa9b8",
+    "taxonomy.json": "7d227b3ff29ab2165341d429d2201f14bea408c14048d480f9b47c907ddb051e",
+    "principles.json": "041940c2bfb73297d3c4b66ccff81d031e1ab75e98156c95e58197ba87fa6c32"
+  },
+  "installed_files": [
+    "prompts/specs/cpu8.md",
+    "verilog/reference/cpu8.v",
+    "TestBench/cpu8_tb.v"
+  ],
+  "installed_check_command": [
+    "/opt/conda/bin/python",
+    "-B",
+    "checker.py",
+    "--spec",
+    "prompts/specs/cpu8.md",
+    "--dut",
+    "verilog/reference/cpu8.v"
+  ],
+  "installed_check_exit_code": 0,
+  "installed_check_stdout": "score: 1.0\ncorrect\n",
+  "core_files_unchanged": true
+}

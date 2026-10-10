@@ -1,2 +1,9 @@
-score: 1.0
-correct
+run 0 round 0: 0.00; checks=compiles; rules=[]; input_bytes=1123/5988
+compiles: requirement: a module named `dice_roller` with ports clk, rst_n, die_select[1:0], roll and rolled_number[7:0] that compiles. Observed: compiler output:
+candidates/gen/md_generic_v4_dynamic_taxonomy_dice_roller_20261010T205718Z_1791665838076810704/dice_roller/dice_roller_0_0.v:10: syntax error
+candidates/gen/md_generic_v4_dynamic_taxonomy_dice_roller_20261010T205718Z_1791665838076810704/dice_roller/dice_roller_0_0.v:10: error: Invalid module item.
+run 0 round 1: 0.55; checks=reset_midrun, first_step, sequence, reset_restart; rules=['generic:COMPILE_ERROR']; input_bytes=3832/5988
+reset_midrun: requirement: reset during a run must restore the initial state immediately, hold it across a clock edge, and restart the specified sequence after release. Observed: at cycle 449, rolled_number is outside the permitted range for the sampled inputs. Context: 14 cycles after die_select changed; 14 cycles after roll went high.
+first_step: requirement: the first rising edge after reset must follow the specified behavior. Observed: at cycle 3, rolled_number is outside the permitted range for the sampled inputs. Context: 1 cycle after die_select changed; 1 cycle after roll went high.
+sequence: requirement: every output must follow the specified behavior on each rising edge. Observed: at cycle 3, rolled_number is outside the permitted range for the sampled inputs. Context: 1 cycle after die_select changed; 1 cycle after roll went high.
+reset_restart: requirement: reset with either input level must restore and restart the specified behavior. Observed: at cycle 423, rolled_number is outside the permitted range for the sampled inputs. Context: 32 cycles after die_select changed; 15 cycles after roll went high.
