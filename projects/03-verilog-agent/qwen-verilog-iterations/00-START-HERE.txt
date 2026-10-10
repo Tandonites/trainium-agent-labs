@@ -1,0 +1,114 @@
+QWEN VERILOG EXPERIMENT ARCHIVE — FILE INDEX
+
+Start with files 01 and 02 for the original one-shot baselines.
+Files 03–11 contain separate later experiments; all iterations within each experiment stay together.
+File 12 contains manual diagnostic edits, not model-generated repairs.
+File 13 contains attribution and the VerilogEval license; retain it when sharing this archive.
+Each experiment preserves its full saved prompts, answers, modules, and result summaries.
+Entry numbers and exact-block numbers retain the numbering of the original combined archive.
+The original combined file remains in the local experiment checkout at ../QWEN-VERILOG-ALL-ITERATIONS.txt; it is not included in this split-file publication.
+Source paths under runs/ refer to local evidence retained by the team, not files included in this PR. The prompt, answer, module, and result text needed to read each experiment is included here.
+
+FILES
+01-baseline-verilogeval.txt — EXPERIMENT: Original five-task VerilogEval one-shot baseline (5 responses)
+02-baseline-guide.txt — EXPERIMENT: Separate three-task GUIDE one-shot baseline (3 responses)
+03-bit-counter-repair-initial-feedback.txt — EXPERIMENT: Bit counter repair: initial feedback, current versus history (6 responses)
+04-bit-counter-repair-revised-feedback.txt — EXPERIMENT: Bit counter repair: revised feedback, current versus history (2 responses)
+05-bcd-knowledge-probes.txt — EXPERIMENT: BCD knowledge probes: encoding, arithmetic, digit widths (3 responses)
+06-bcd-clarified-definition.txt — EXPERIMENT: BCD explicit-definition probes and fresh HDL generation (2 responses)
+07-fifo-generation-and-repairs.txt — EXPERIMENT: Team FIFO: initial generation, fresh retries, current feedback, history (10 responses)
+08-feedback-pattern-comparison.txt — EXPERIMENT: BCD and FIFO: current feedback, English patterns, fresh retries (16 responses)
+09-feedback-lookup-comparison.txt — EXPERIMENT: BCD and FIFO: current feedback versus lookup guidance (8 responses)
+10-detailed-versus-concise-prompts.txt — EXPERIMENT: Detailed versus concise prompts: fresh generation and repair (12 responses)
+11-fifo-source-diagnosis.txt — EXPERIMENT: FIFO: current feedback versus source diagnosis (6 responses)
+12-manual-diagnostic-edits.txt — APPENDIX: MANUAL DIAGNOSTIC COPIES — NOT QWEN-GENERATED REPAIRS
+13-attribution-and-license.txt — ATTRIBUTION
+
+ORIGINAL ARCHIVE GUIDE AND COMPLETE ATTEMPT INDEX
+
+QWEN VERILOG: INITIAL PROMPTS, GENERATED MODULES, AND ALL SAVED ITERATIONS
+Exported from local evidence on 2026-10-10T19:44:32.232291+00:00
+Model: Qwen/Qwen3-8B. Source paths are relative to trainium-agent-labs unless absolute.
+
+HOW TO READ THIS FILE
+73 saved Qwen request/response pairs across 11 experiments: 69 HDL-generation responses and 4 BCD knowledge-probe responses. Each entry contains the exact prompt messages, complete model answer, saved evaluated module when available, and recorded test result. Large per-sample result arrays are summarized to their saved status and counts; full logs remain at the stated source paths. Repeated answers are retained in full. One truncated response has no evaluated module.
+The original one-shot baselines are first: VerilogEval 2/5 passed; separately selected GUIDE tasks 1/3 passed. Later conditions are separate experiments, not additional baseline attempts. Current/history/pattern/lookup/diagnosis conditions are parallel comparisons; attempt numbers restart for each condition. Fresh attempts are independent requests, not repairs.
+The full system and user messages below are the prompts actually sent. Feedback and any prior module are included exactly where they were supplied. Saved model settings, completion reasons, and token usage are retained. Exact blocks preserve their content, including any original errors; an extra separator newline is outside each block.
+Scope: all locally saved Qwen responses for the Verilog generation, repair, and BCD knowledge experiments present at export time. Python, heat-rod, prose-rewriting, offline checker tests, and non-Qwen brainstorming are outside this Verilog archive. Copies/replays are not counted as new generations. Manual BCD/sequence diagnostic edits appear in a separate appendix and receive no Qwen credit. No new model calls or simulations were performed for this export.
+Pass means the saved specified simulation tests passed; it does not establish formal correctness or synthesis success. Final/withheld results in experiment summaries are evaluation evidence, not additional prompt messages.
+
+CONTENTS / ATTEMPT INDEX
+001 | Prob009_popcount3 | verilog-oneshot-20261010T155559.456475Z/Prob009_popcount3 | functional_mismatch; mismatches 59/220
+002 | Prob035_count1to10 | verilog-oneshot-20261010T155559.456475Z/Prob035_count1to10 | pass; mismatches 0/439
+003 | Prob075_counter_2bc | verilog-oneshot-20261010T155559.456475Z/Prob075_counter_2bc | pass; mismatches 0/1051
+004 | Prob085_shift4 | verilog-oneshot-20261010T155559.456475Z/Prob085_shift4 | functional_mismatch; mismatches 81/427
+005 | Prob096_review2015_fsmseq | verilog-oneshot-20261010T155559.456475Z/Prob096_review2015_fsmseq | functional_mismatch; mismatches 175/643
+006 | BinaryToBCD5 | verilog-oneshot-20261010T162234.717156Z/BinaryToBCD5 | functional_mismatch; mismatches 22/32
+007 | SequenceDetector | verilog-oneshot-20261010T162234.717156Z/SequenceDetector | compile_error
+008 | ShiftRegister8 | verilog-oneshot-20261010T162234.717156Z/ShiftRegister8 | pass; mismatches 0/8
+009 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/current/round-001 | functional_mismatch; mismatches 170/220
+010 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/current/round-002 | functional_mismatch; mismatches 92/220
+011 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/current/round-003 | functional_mismatch; mismatches 92/220
+012 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/history/round-001 | functional_mismatch; mismatches 170/220
+013 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/history/round-002 | functional_mismatch; mismatches 170/220
+014 | Prob009_popcount3 | verilog-repair-20261010T162909.634763Z/history/round-003 | functional_mismatch; mismatches 119/220
+015 | Prob009_popcount3 | verilog-repair-20261010T163253.055553Z/current/round-001 | pass; mismatches 0/220
+016 | Prob009_popcount3 | verilog-repair-20261010T163253.055553Z/history/round-001 | pass; mismatches 0/220
+017 | arithmetic | bcd-diagnosis-20261010T163459.170405Z/arithmetic | incorrect
+018 | bcd_encoding | bcd-diagnosis-20261010T163459.170405Z/bcd_encoding | incorrect
+019 | digit_widths | bcd-diagnosis-20261010T163459.170405Z/digit_widths | correct
+020 | BinaryToBCD5 | bcd-clarification-20261010T164000.684613Z/code | functional_mismatch; mismatches 24/32
+021 | bcd_encoding | bcd-clarification-20261010T164000.684613Z/encoding | correct
+022 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/one-shot | functional_mismatch; mismatches 180/184
+023 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/current/attempt-01 | functional_mismatch; mismatches 180/184
+024 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/current/attempt-02 | functional_mismatch; mismatches 180/184
+025 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/current/attempt-03 | functional_mismatch; mismatches 180/184
+026 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/fresh/attempt-01 | functional_mismatch; mismatches 180/184
+027 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/fresh/attempt-02 | functional_mismatch; mismatches 180/184
+028 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/fresh/attempt-03 | functional_mismatch; mismatches 180/184
+029 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/history/attempt-01 | functional_mismatch; mismatches 180/184
+030 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/history/attempt-02 | functional_mismatch; mismatches 180/184
+031 | team_fifo4_v1 | verilog-fifo-20261010T170152.996280Z/history/attempt-03 | functional_mismatch; mismatches 180/184
+032 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/current/attempt-01 | pass; mismatches 0/32
+033 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/fresh/attempt-01 | functional_mismatch; mismatches 22/32
+034 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/fresh/attempt-02 | functional_mismatch; mismatches 22/32
+035 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/fresh/attempt-03 | functional_mismatch; mismatches 22/32
+036 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/pattern/attempt-01 | functional_mismatch; mismatches 22/32
+037 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/pattern/attempt-02 | functional_mismatch; mismatches 22/32
+038 | BinaryToBCD5 | feedback-pattern-20261010T181732.762255Z/BinaryToBCD5/pattern/attempt-03 | functional_mismatch; mismatches 22/32
+039 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/current/attempt-01 | functional_mismatch; mismatches 180/184
+040 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/current/attempt-02 | functional_mismatch; mismatches 180/184
+041 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/current/attempt-03 | functional_mismatch; mismatches 180/184
+042 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/fresh/attempt-01 | functional_mismatch; mismatches 180/184
+043 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/fresh/attempt-02 | functional_mismatch; mismatches 180/184
+044 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/fresh/attempt-03 | functional_mismatch; mismatches 180/184
+045 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/pattern/attempt-01 | functional_mismatch; mismatches 180/184
+046 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/pattern/attempt-02 | functional_mismatch; mismatches 180/184
+047 | team_fifo4_v1 | feedback-pattern-20261010T181732.762255Z/team_fifo4_v1/pattern/attempt-03 | functional_mismatch; mismatches 180/184
+048 | BinaryToBCD5 | feedback-lookup-20261010T183339.023152Z/BinaryToBCD5/current/attempt-01 | pass; mismatches 0/32
+049 | BinaryToBCD5 | feedback-lookup-20261010T183339.023152Z/BinaryToBCD5/lookup/attempt-01 | pass; mismatches 0/32
+050 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/current/attempt-01 | functional_mismatch; mismatches 180/184
+051 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/current/attempt-02 | functional_mismatch; mismatches 180/184
+052 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/current/attempt-03 | functional_mismatch; mismatches 180/184
+053 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/lookup/attempt-01 | functional_mismatch; mismatches 180/184
+054 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/lookup/attempt-02 | functional_mismatch; mismatches 180/184
+055 | team_fifo4_v1 | feedback-lookup-20261010T183339.023152Z/team_fifo4_v1/lookup/attempt-03 | functional_mismatch; mismatches 180/184
+056 | BinaryToBCD5 | qwen-prompt-detail-20261010T190939.147533Z/fresh/BinaryToBCD5/concise | pass; mismatches 0/32
+057 | BinaryToBCD5 | qwen-prompt-detail-20261010T190939.147533Z/fresh/BinaryToBCD5/verbose | functional_mismatch; mismatches 22/32
+058 | SequenceDetector | qwen-prompt-detail-20261010T190939.147533Z/fresh/SequenceDetector/concise | truncated
+059 | SequenceDetector | qwen-prompt-detail-20261010T190939.147533Z/fresh/SequenceDetector/verbose | compile_error
+060 | ShiftRegister8 | qwen-prompt-detail-20261010T190939.147533Z/fresh/ShiftRegister8/concise | pass; mismatches 0/8
+061 | ShiftRegister8 | qwen-prompt-detail-20261010T190939.147533Z/fresh/ShiftRegister8/verbose | pass; mismatches 0/8
+062 | team_fifo4_v1 | qwen-prompt-detail-20261010T190939.147533Z/fresh/team_fifo4_v1/concise | functional_mismatch; mismatches 157/184
+063 | team_fifo4_v1 | qwen-prompt-detail-20261010T190939.147533Z/fresh/team_fifo4_v1/verbose | functional_mismatch; mismatches 180/184
+064 | BinaryToBCD5 | qwen-prompt-detail-20261010T190939.147533Z/repair/BinaryToBCD5/concise | functional_mismatch; mismatches 22/32
+065 | BinaryToBCD5 | qwen-prompt-detail-20261010T190939.147533Z/repair/BinaryToBCD5/verbose | pass; mismatches 0/32
+066 | team_fifo4_v1 | qwen-prompt-detail-20261010T190939.147533Z/repair/team_fifo4_v1/concise | functional_mismatch; mismatches 180/184
+067 | team_fifo4_v1 | qwen-prompt-detail-20261010T190939.147533Z/repair/team_fifo4_v1/verbose | functional_mismatch; mismatches 180/184
+068 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/current/attempt-01 | functional_mismatch; mismatches 180/184
+069 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/current/attempt-02 | functional_mismatch; mismatches 180/184
+070 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/current/attempt-03 | functional_mismatch; mismatches 180/184
+071 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/diagnosis/attempt-01 | functional_mismatch; mismatches 171/184
+072 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/diagnosis/attempt-02 | compile_error
+073 | team_fifo4_v1 | feedback-diagnosis-20261010T192756.448717Z/team_fifo4_v1/diagnosis/attempt-03 | compile_error
+

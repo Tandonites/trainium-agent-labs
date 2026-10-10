@@ -1,0 +1,455 @@
+========================================================================================
+EXPERIMENT: BCD knowledge probes: encoding, arithmetic, digit widths
+RUN: runs/bcd-diagnosis-20261010T163459.170405Z
+========================================================================================
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/summary.json
+----- BEGIN EXACT BLOCK 0071: SAVED EXPERIMENT SUMMARY -----
+{
+  "status": "complete",
+  "controls": [
+    {
+      "status": "functional_mismatch",
+      "mismatches": 22,
+      "samples": 32,
+      "failures": [],
+      "variant": "unchanged",
+      "origin": "baseline_replay"
+    },
+    {
+      "status": "functional_mismatch",
+      "mismatches": 22,
+      "samples": 32,
+      "failures": [],
+      "variant": "arithmetic_only",
+      "origin": "human_controlled_edit"
+    },
+    {
+      "status": "functional_mismatch",
+      "mismatches": 22,
+      "samples": 32,
+      "failures": [],
+      "variant": "widths_only",
+      "origin": "human_controlled_edit"
+    },
+    {
+      "status": "pass",
+      "mismatches": 0,
+      "samples": 32,
+      "failures": [],
+      "variant": "arithmetic_and_widths",
+      "origin": "human_controlled_edit"
+    }
+  ],
+  "probes": [
+    {
+      "probe": "bcd_encoding",
+      "usage": {
+        "prompt_tokens": 93,
+        "total_tokens": 235,
+        "completion_tokens": 142,
+        "prompt_tokens_details": null
+      },
+      "tokenizer": "server /tokenize",
+      "elapsed_seconds": 13.188,
+      "finish_reason": "stop",
+      "status": "incorrect",
+      "checks": {
+        "0": false,
+        "9": false,
+        "10": false,
+        "15": false,
+        "16": false,
+        "20": false,
+        "31": false
+      },
+      "answer": {
+        "encodings": {
+          "0": "0x30",
+          "9": "0x39",
+          "10": "0x3130",
+          "15": "0x3135",
+          "16": "0x3136",
+          "20": "0x3230",
+          "31": "0x3331"
+        },
+        "meaning": "Each 8-bit packed BCD encoding uses two nibbles (4 bits) to represent a decimal digit, with the first nibble representing the tens place and the second nibble representing the ones place."
+      }
+    },
+    {
+      "probe": "arithmetic",
+      "usage": {
+        "prompt_tokens": 152,
+        "total_tokens": 399,
+        "completion_tokens": 247,
+        "prompt_tokens_details": null
+      },
+      "tokenizer": "server /tokenize",
+      "elapsed_seconds": 20.447,
+      "finish_reason": "stop",
+      "status": "incorrect",
+      "checks": {
+        "10:mask": true,
+        "10:shift": true,
+        "10:mod10": true,
+        "10:div10": true,
+        "15:mask": true,
+        "15:shift": true,
+        "15:mod10": true,
+        "15:div10": true,
+        "16:mask": true,
+        "16:shift": false,
+        "16:mod10": true,
+        "16:div10": true,
+        "31:mask": true,
+        "31:shift": false,
+        "31:mod10": true,
+        "31:div10": true,
+        "mask_not_equivalent": true,
+        "shift_not_equivalent": true
+      },
+      "answer": {
+        "rows": [
+          {
+            "n": 10,
+            "mask": 10,
+            "shift": 0,
+            "mod10": 0,
+            "div10": 1
+          },
+          {
+            "n": 15,
+            "mask": 15,
+            "shift": 0,
+            "mod10": 5,
+            "div10": 1
+          },
+          {
+            "n": 16,
+            "mask": 16,
+            "shift": 0,
+            "mod10": 6,
+            "div10": 1
+          },
+          {
+            "n": 31,
+            "mask": 31,
+            "shift": 0,
+            "mod10": 1,
+            "div10": 3
+          }
+        ],
+        "mask_equals_mod10": false,
+        "shift_equals_div10": false,
+        "explanation": "The masking and shifting operations are not equivalent to modulo 10 and division by 10 for all values of n in 0..31."
+      }
+    },
+    {
+      "probe": "digit_widths",
+      "usage": {
+        "prompt_tokens": 112,
+        "total_tokens": 199,
+        "completion_tokens": 87,
+        "prompt_tokens_details": null
+      },
+      "tokenizer": "server /tokenize",
+      "elapsed_seconds": 8.743,
+      "finish_reason": "stop",
+      "status": "correct",
+      "checks": {
+        "concatenation": true,
+        "digit_width": true,
+        "layout": true
+      },
+      "answer": {
+        "concat_width_bits": 10,
+        "bcd_digit_width_bits": 4,
+        "current_layout_correct": false,
+        "reason": "The layout places the tens digit in the higher 4 bits and the ones digit in the lower 4 bits, which is correct for BCD, but the concatenation uses 10 bits which is not a standard 8-bit BCD format."
+      }
+    }
+  ],
+  "model_generation_requests": 3,
+  "limitations": "One response per diagnostic prompt; conceptual answers do not prove reliable HDL generation. Controlled edits are human edits, not Qwen repairs."
+}
+
+----- END EXACT BLOCK 0071 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 017: arithmetic / arithmetic
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 1000,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/arithmetic/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0072: PROMPT MESSAGE 1 / USER -----
+Let n be an unsigned 5-bit Verilog value. For n=10,15,16,31 evaluate n & 5'b11111, n >> 4, n % 10, and n / 10, reporting each result as a decimal integer. Are the masking and shifting expressions equivalent to modulo 10 and division by 10 for every n in 0..31? Return only JSON with rows (an array of objects with keys n, mask, shift, mod10, div10), mask_equals_mod10 (boolean), shift_equals_div10 (boolean), and explanation (one sentence).
+----- END EXACT BLOCK 0072 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 247, "prompt_tokens": 152, "prompt_tokens_details": null, "total_tokens": 399}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/arithmetic/response.json
+----- BEGIN EXACT BLOCK 0073: COMPLETE QWEN ANSWER (UNEDITED) -----
+{
+  "rows": [
+    {
+      "n": 10,
+      "mask": 10,
+      "shift": 0,
+      "mod10": 0,
+      "div10": 1
+    },
+    {
+      "n": 15,
+      "mask": 15,
+      "shift": 0,
+      "mod10": 5,
+      "div10": 1
+    },
+    {
+      "n": 16,
+      "mask": 16,
+      "shift": 0,
+      "mod10": 6,
+      "div10": 1
+    },
+    {
+      "n": 31,
+      "mask": 31,
+      "shift": 0,
+      "mod10": 1,
+      "div10": 3
+    }
+  ],
+  "mask_equals_mod10": false,
+  "shift_equals_div10": false,
+  "explanation": "The masking and shifting operations are not equivalent to modulo 10 and division by 10 for all values of n in 0..31."
+}
+----- END EXACT BLOCK 0073 -----
+
+Knowledge probe: prose/JSON answer only; no Verilog module was requested or evaluated.
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/arithmetic/result.json
+----- BEGIN EXACT BLOCK 0074: SAVED RESULT FOR THIS ANSWER -----
+{
+  "probe": "arithmetic",
+  "usage": {
+    "prompt_tokens": 152,
+    "total_tokens": 399,
+    "completion_tokens": 247,
+    "prompt_tokens_details": null
+  },
+  "tokenizer": "server /tokenize",
+  "elapsed_seconds": 20.447,
+  "finish_reason": "stop",
+  "status": "incorrect",
+  "checks": {
+    "10:mask": true,
+    "10:shift": true,
+    "10:mod10": true,
+    "10:div10": true,
+    "15:mask": true,
+    "15:shift": true,
+    "15:mod10": true,
+    "15:div10": true,
+    "16:mask": true,
+    "16:shift": false,
+    "16:mod10": true,
+    "16:div10": true,
+    "31:mask": true,
+    "31:shift": false,
+    "31:mod10": true,
+    "31:div10": true,
+    "mask_not_equivalent": true,
+    "shift_not_equivalent": true
+  },
+  "answer": {
+    "rows": [
+      {
+        "n": 10,
+        "mask": 10,
+        "shift": 0,
+        "mod10": 0,
+        "div10": 1
+      },
+      {
+        "n": 15,
+        "mask": 15,
+        "shift": 0,
+        "mod10": 5,
+        "div10": 1
+      },
+      {
+        "n": 16,
+        "mask": 16,
+        "shift": 0,
+        "mod10": 6,
+        "div10": 1
+      },
+      {
+        "n": 31,
+        "mask": 31,
+        "shift": 0,
+        "mod10": 1,
+        "div10": 3
+      }
+    ],
+    "mask_equals_mod10": false,
+    "shift_equals_div10": false,
+    "explanation": "The masking and shifting operations are not equivalent to modulo 10 and division by 10 for all values of n in 0..31."
+  }
+}
+
+----- END EXACT BLOCK 0074 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 018: bcd_encoding / bcd_encoding
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 1000,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/bcd_encoding/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0075: PROMPT MESSAGE 1 / USER -----
+Without writing HDL, give the 8-bit packed BCD encodings of decimal integers 0, 9, 10, 15, 16, 20, 31. Write each encoding as a hexadecimal byte. Return only JSON with keys encodings (an object mapping the decimal strings to hex strings) and meaning (one sentence explaining the two nibbles).
+----- END EXACT BLOCK 0075 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 142, "prompt_tokens": 93, "prompt_tokens_details": null, "total_tokens": 235}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/bcd_encoding/response.json
+----- BEGIN EXACT BLOCK 0076: COMPLETE QWEN ANSWER (UNEDITED) -----
+{
+  "encodings": {
+    "0": "0x30",
+    "9": "0x39",
+    "10": "0x3130",
+    "15": "0x3135",
+    "16": "0x3136",
+    "20": "0x3230",
+    "31": "0x3331"
+  },
+  "meaning": "Each 8-bit packed BCD encoding uses two nibbles (4 bits) to represent a decimal digit, with the first nibble representing the tens place and the second nibble representing the ones place."
+}
+----- END EXACT BLOCK 0076 -----
+
+Knowledge probe: prose/JSON answer only; no Verilog module was requested or evaluated.
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/bcd_encoding/result.json
+----- BEGIN EXACT BLOCK 0077: SAVED RESULT FOR THIS ANSWER -----
+{
+  "probe": "bcd_encoding",
+  "usage": {
+    "prompt_tokens": 93,
+    "total_tokens": 235,
+    "completion_tokens": 142,
+    "prompt_tokens_details": null
+  },
+  "tokenizer": "server /tokenize",
+  "elapsed_seconds": 13.188,
+  "finish_reason": "stop",
+  "status": "incorrect",
+  "checks": {
+    "0": false,
+    "9": false,
+    "10": false,
+    "15": false,
+    "16": false,
+    "20": false,
+    "31": false
+  },
+  "answer": {
+    "encodings": {
+      "0": "0x30",
+      "9": "0x39",
+      "10": "0x3130",
+      "15": "0x3135",
+      "16": "0x3136",
+      "20": "0x3230",
+      "31": "0x3331"
+    },
+    "meaning": "Each 8-bit packed BCD encoding uses two nibbles (4 bits) to represent a decimal digit, with the first nibble representing the tens place and the second nibble representing the ones place."
+  }
+}
+
+----- END EXACT BLOCK 0077 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 019: digit_widths / digit_widths
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 1000,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/digit_widths/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0078: PROMPT MESSAGE 1 / USER -----
+Consider Verilog wire [4:0] tens, ones; wire [7:0] bcd; assign bcd = {tens, ones};. How many bits are in the source concatenation? Does this layout place two packed BCD decimal digits in the correct nibbles? How many bits should each BCD decimal digit occupy? Return only JSON with concat_width_bits (integer), bcd_digit_width_bits (integer), current_layout_correct (boolean), and reason (one sentence).
+----- END EXACT BLOCK 0078 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 87, "prompt_tokens": 112, "prompt_tokens_details": null, "total_tokens": 199}
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/digit_widths/response.json
+----- BEGIN EXACT BLOCK 0079: COMPLETE QWEN ANSWER (UNEDITED) -----
+{
+  "concat_width_bits": 10,
+  "bcd_digit_width_bits": 4,
+  "current_layout_correct": false,
+  "reason": "The layout places the tens digit in the higher 4 bits and the ones digit in the lower 4 bits, which is correct for BCD, but the concatenation uses 10 bits which is not a standard 8-bit BCD format."
+}
+----- END EXACT BLOCK 0079 -----
+
+Knowledge probe: prose/JSON answer only; no Verilog module was requested or evaluated.
+Source: runs/bcd-diagnosis-20261010T163459.170405Z/digit_widths/result.json
+----- BEGIN EXACT BLOCK 0080: SAVED RESULT FOR THIS ANSWER -----
+{
+  "probe": "digit_widths",
+  "usage": {
+    "prompt_tokens": 112,
+    "total_tokens": 199,
+    "completion_tokens": 87,
+    "prompt_tokens_details": null
+  },
+  "tokenizer": "server /tokenize",
+  "elapsed_seconds": 8.743,
+  "finish_reason": "stop",
+  "status": "correct",
+  "checks": {
+    "concatenation": true,
+    "digit_width": true,
+    "layout": true
+  },
+  "answer": {
+    "concat_width_bits": 10,
+    "bcd_digit_width_bits": 4,
+    "current_layout_correct": false,
+    "reason": "The layout places the tens digit in the higher 4 bits and the ones digit in the lower 4 bits, which is correct for BCD, but the concatenation uses 10 bits which is not a standard 8-bit BCD format."
+  }
+}
+
+----- END EXACT BLOCK 0080 -----
+
+
