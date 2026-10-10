@@ -68,5 +68,6 @@ def tasks():
 python runner.py --tasks myteam:tasks --styles full,score
 ```
 
-Until then, `--tasks uart_tx,uart_rx` wraps the 03-protocol-agent levels. Their **hidden test is
+Until then, `--tasks uart_tx,uart_rx` wraps the level folders in `../03-protocol-agent/`
+(the only thing the runner uses from there; it needs those folders, nothing else). Their **hidden test is
 a stub** (the checker's own pass/fail), and every final line says so with `hidden_is_stub: true`.

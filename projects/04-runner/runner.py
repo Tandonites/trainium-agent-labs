@@ -32,10 +32,19 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import tasks as tasklib  # noqa: E402
 from cache import Cache, key_of  # noqa: E402
-from endpoints import Pool  # noqa: E402
+from endpoints import Pool, base_url  # noqa: E402
 
-sys.path.insert(0, tasklib.LEVELS_DIR)
-from agent import base_url, extract_code  # noqa: E402  (03-protocol-agent)
+
+def extract_code(text):
+    """The module from a reply: the longest fenced block containing 'module', else bare
+    module...endmodule. Qwen3 <think> blocks are stripped first."""
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    blocks = re.findall(r"```(?:verilog|systemverilog|v|sv)?\s*\n(.*?)```", text, flags=re.S)
+    blocks = [b for b in blocks if "module" in b]
+    if blocks:
+        return max(blocks, key=len).strip()
+    m = re.search(r"module\b.*?endmodule", text, flags=re.S)
+    return m.group(0).strip() if m else ""
 
 
 def sha(text):

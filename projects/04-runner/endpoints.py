@@ -5,6 +5,7 @@ The pool hands each request to the least-busy healthy seat, and a seat that erro
 for 15 s while the request is retried on another one.
 """
 import json
+import os
 import threading
 import time
 import urllib.request
@@ -13,6 +14,12 @@ import urllib.request
 def normalise(u):
     u = u.strip().rstrip("/")
     return u if u.endswith("/v1") else u + "/v1"
+
+
+def base_url():
+    """Default endpoint when neither --endpoints nor endpoints.txt names one."""
+    return normalise(os.environ.get("RTL_AGENT_BASE_URL") or os.environ.get("KERNEL_AGENT_BASE_URL")
+                     or "http://localhost:8000")
 
 
 def get_json(url, timeout=5):
