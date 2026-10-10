@@ -1,0 +1,251 @@
+========================================================================================
+EXPERIMENT: BCD explicit-definition probes and fresh HDL generation
+RUN: runs/bcd-clarification-20261010T164000.684613Z
+========================================================================================
+Source: runs/bcd-clarification-20261010T164000.684613Z/summary.json
+----- BEGIN EXACT BLOCK 0081: SAVED EXPERIMENT SUMMARY -----
+{
+  "status": "complete",
+  "encoding": {
+    "probe": "bcd_encoding",
+    "usage": {
+      "prompt_tokens": 221,
+      "total_tokens": 366,
+      "completion_tokens": 145,
+      "prompt_tokens_details": null
+    },
+    "tokenizer": "server /tokenize",
+    "elapsed_seconds": 13.13,
+    "finish_reason": "stop",
+    "status": "correct",
+    "checks": {
+      "0": true,
+      "9": true,
+      "10": true,
+      "15": true,
+      "16": true,
+      "20": true,
+      "31": true
+    },
+    "answer": {
+      "encodings": {
+        "0": "0x00",
+        "9": "0x09",
+        "10": "0x10",
+        "15": "0x15",
+        "16": "0x16",
+        "20": "0x20",
+        "31": "0x31"
+      },
+      "meaning": "The 8-bit packed BCD encoding uses two 4-bit nibbles: the higher nibble (bits 7:4) represents the tens digit and the lower nibble (bits 3:0) represents the ones digit, with leading zeros as needed."
+    }
+  },
+  "code": {
+    "task": "BinaryToBCD5",
+    "elapsed_seconds": 14.685,
+    "prompt_tokens_preflight": 341,
+    "tokenizer_source": "server /tokenize",
+    "usage": {
+      "prompt_tokens": 341,
+      "total_tokens": 511,
+      "completion_tokens": 170,
+      "prompt_tokens_details": null
+    },
+    "finish_reason": "stop",
+    "status": "functional_mismatch",
+    "mismatches": 24,
+    "samples": 32,
+    "failures": []
+  },
+  "model_generation_requests": 2,
+  "limitations": "One response per diagnostic condition; no generalization claim; separate from the original baseline."
+}
+
+----- END EXACT BLOCK 0081 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 020: BinaryToBCD5 / code
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/bcd-clarification-20261010T164000.684613Z/code/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0082: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named binary_to_bcd_converter in one verilog code block. Return no testbench or explanation.
+
+Implement a combinational unsigned binary-to-BCD converter in Verilog.
+
+Interface: module binary_to_bcd_converter(input [4:0] binary_input,
+                                          output [7:0] bcd_output).
+
+For every input from 0 through 31, output two packed BCD digits:
+bcd_output[7:4] is the tens digit and bcd_output[3:0] is the ones digit.
+Keep leading zeros. Examples: 0 becomes 8'h00, 9 becomes 8'h09,
+10 becomes 8'h10, and 31 becomes 8'h31. There is no clock, reset,
+stored state, or pipeline delay. Any synthesizable algorithm is permitted.
+
+
+BCD clarification: Separate a decimal number into its decimal digits. Represent each digit using the 4-bit binary representation of that digit, then concatenate those 4-bit groups in digit order. For decimal 10, the digits are 1 and 0; 1 becomes 0001 and 0 becomes 0000, so packed BCD is 00010000 (hex 0x10). For this two-digit output, keep the tens digit in bits 7:4 and the ones digit in bits 3:0, padding a zero tens digit when needed.
+----- END EXACT BLOCK 0082 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 170, "prompt_tokens": 341, "prompt_tokens_details": null, "total_tokens": 511}
+Source: runs/bcd-clarification-20261010T164000.684613Z/code/response.json
+----- BEGIN EXACT BLOCK 0083: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module binary_to_bcd_converter(input [4:0] binary_input,
+                                output [7:0] bcd_output);
+
+    // Calculate the tens and ones digits of the decimal number
+    // binary_input ranges from 0 to 31 (5 bits)
+    // bcd_output[7:4] = tens digit (0-3), bcd_output[3:0] = ones digit (0-9)
+
+    // Compute the ones digit
+    wire [3:0] ones = binary_input[3:0];
+
+    // Compute the tens digit by dividing by 10
+    wire [1:0] tens = binary_input[4:3];
+
+    // Assign the BCD output
+    assign bcd_output = {tens, ones};
+
+endmodule
+```
+----- END EXACT BLOCK 0083 -----
+
+Source: runs/bcd-clarification-20261010T164000.684613Z/code/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0084: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module binary_to_bcd_converter(input [4:0] binary_input,
+                                output [7:0] bcd_output);
+
+    // Calculate the tens and ones digits of the decimal number
+    // binary_input ranges from 0 to 31 (5 bits)
+    // bcd_output[7:4] = tens digit (0-3), bcd_output[3:0] = ones digit (0-9)
+
+    // Compute the ones digit
+    wire [3:0] ones = binary_input[3:0];
+
+    // Compute the tens digit by dividing by 10
+    wire [1:0] tens = binary_input[4:3];
+
+    // Assign the BCD output
+    assign bcd_output = {tens, ones};
+
+endmodule
+
+----- END EXACT BLOCK 0084 -----
+
+Source: runs/bcd-clarification-20261010T164000.684613Z/code/result.json
+----- BEGIN EXACT BLOCK 0085: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "BinaryToBCD5",
+  "elapsed_seconds": 14.685,
+  "prompt_tokens_preflight": 341,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 341,
+    "total_tokens": 511,
+    "completion_tokens": 170,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "functional_mismatch",
+  "mismatches": 24,
+  "samples": 32,
+  "failures": []
+}
+
+----- END EXACT BLOCK 0085 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 021: bcd_encoding / encoding
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 1000,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/bcd-clarification-20261010T164000.684613Z/encoding/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0086: PROMPT MESSAGE 1 / USER -----
+BCD clarification: Separate a decimal number into its decimal digits. Represent each digit using the 4-bit binary representation of that digit, then concatenate those 4-bit groups in digit order. For decimal 10, the digits are 1 and 0; 1 becomes 0001 and 0 becomes 0000, so packed BCD is 00010000 (hex 0x10). For this two-digit output, keep the tens digit in bits 7:4 and the ones digit in bits 3:0, padding a zero tens digit when needed.
+
+Without writing HDL, give the 8-bit packed BCD encodings of decimal integers 0, 9, 10, 15, 16, 20, 31. Write each encoding as a hexadecimal byte. Return only JSON with keys encodings (an object mapping the decimal strings to hex strings) and meaning (one sentence explaining the two nibbles).
+----- END EXACT BLOCK 0086 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 145, "prompt_tokens": 221, "prompt_tokens_details": null, "total_tokens": 366}
+Source: runs/bcd-clarification-20261010T164000.684613Z/encoding/response.json
+----- BEGIN EXACT BLOCK 0087: COMPLETE QWEN ANSWER (UNEDITED) -----
+{
+  "encodings": {
+    "0": "0x00",
+    "9": "0x09",
+    "10": "0x10",
+    "15": "0x15",
+    "16": "0x16",
+    "20": "0x20",
+    "31": "0x31"
+  },
+  "meaning": "The 8-bit packed BCD encoding uses two 4-bit nibbles: the higher nibble (bits 7:4) represents the tens digit and the lower nibble (bits 3:0) represents the ones digit, with leading zeros as needed."
+}
+----- END EXACT BLOCK 0087 -----
+
+Knowledge probe: prose/JSON answer only; no Verilog module was requested or evaluated.
+Source: runs/bcd-clarification-20261010T164000.684613Z/encoding/result.json
+----- BEGIN EXACT BLOCK 0088: SAVED RESULT FOR THIS ANSWER -----
+{
+  "probe": "bcd_encoding",
+  "usage": {
+    "prompt_tokens": 221,
+    "total_tokens": 366,
+    "completion_tokens": 145,
+    "prompt_tokens_details": null
+  },
+  "tokenizer": "server /tokenize",
+  "elapsed_seconds": 13.13,
+  "finish_reason": "stop",
+  "status": "correct",
+  "checks": {
+    "0": true,
+    "9": true,
+    "10": true,
+    "15": true,
+    "16": true,
+    "20": true,
+    "31": true
+  },
+  "answer": {
+    "encodings": {
+      "0": "0x00",
+      "9": "0x09",
+      "10": "0x10",
+      "15": "0x15",
+      "16": "0x16",
+      "20": "0x20",
+      "31": "0x31"
+    },
+    "meaning": "The 8-bit packed BCD encoding uses two 4-bit nibbles: the higher nibble (bits 7:4) represents the tens digit and the lower nibble (bits 3:0) represents the ones digit, with leading zeros as needed."
+  }
+}
+
+----- END EXACT BLOCK 0088 -----
+
+

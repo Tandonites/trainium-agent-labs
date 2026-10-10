@@ -1,0 +1,476 @@
+========================================================================================
+EXPERIMENT: Separate three-task GUIDE one-shot baseline
+RUN: runs/verilog-oneshot-20261010T162234.717156Z
+========================================================================================
+Source: runs/verilog-oneshot-20261010T162234.717156Z/summary.json
+----- BEGIN EXACT BLOCK 0023: SAVED EXPERIMENT SUMMARY -----
+{
+  "status": "complete",
+  "passed": 1,
+  "tasks": 3,
+  "model_generation_requests": 3,
+  "results": [
+    {
+      "task": "BinaryToBCD5",
+      "elapsed_seconds": 12.59,
+      "prompt_tokens_preflight": 213,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 213,
+        "total_tokens": 346,
+        "completion_tokens": 133,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "functional_mismatch",
+      "mismatches": 22,
+      "samples": 32,
+      "failures": []
+    },
+    {
+      "task": "SequenceDetector",
+      "elapsed_seconds": 39.574,
+      "prompt_tokens_preflight": 314,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 314,
+        "total_tokens": 830,
+        "completion_tokens": 516,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "compile_error",
+      "detail": "/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: error: localparam must have a value.\n/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: syntax error\n/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:10: error: Invalid module item.\n"
+    },
+    {
+      "task": "ShiftRegister8",
+      "elapsed_seconds": 10.078,
+      "prompt_tokens_preflight": 247,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 247,
+        "total_tokens": 353,
+        "completion_tokens": 106,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "pass",
+      "mismatches": 0,
+      "samples": 8,
+      "failures": []
+    }
+  ],
+  "limitations": "Three-task GUIDE smoke test with clarified specifications and explicit scoring/timing adapters; public data; simulation only; no repair; sparse sequential coverage; no synthesis proof."
+}
+
+----- END EXACT BLOCK 0023 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 006: BinaryToBCD5 / BinaryToBCD5
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/BinaryToBCD5/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0024: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named binary_to_bcd_converter in one verilog code block. Return no testbench or explanation.
+
+Implement a combinational unsigned binary-to-BCD converter in Verilog.
+
+Interface: module binary_to_bcd_converter(input [4:0] binary_input,
+                                          output [7:0] bcd_output).
+
+For every input from 0 through 31, output two packed BCD digits:
+bcd_output[7:4] is the tens digit and bcd_output[3:0] is the ones digit.
+Keep leading zeros. Examples: 0 becomes 8'h00, 9 becomes 8'h09,
+10 becomes 8'h10, and 31 becomes 8'h31. There is no clock, reset,
+stored state, or pipeline delay. Any synthesizable algorithm is permitted.
+
+----- END EXACT BLOCK 0024 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 133, "prompt_tokens": 213, "prompt_tokens_details": null, "total_tokens": 346}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/BinaryToBCD5/response.json
+----- BEGIN EXACT BLOCK 0025: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module binary_to_bcd_converter(input [4:0] binary_input,
+                                output [7:0] bcd_output);
+
+    // Calculate the tens and ones digits of the binary input
+    wire [4:0] tens, ones;
+
+    // Compute ones digit: binary_input % 10
+    assign ones = binary_input & 9'b11111;
+
+    // Compute tens digit: binary_input / 10
+    assign tens = binary_input >> 4;
+
+    // Convert tens and ones to BCD
+    assign bcd_output = {tens, ones};
+
+endmodule
+```
+----- END EXACT BLOCK 0025 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/BinaryToBCD5/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0026: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module binary_to_bcd_converter(input [4:0] binary_input,
+                                output [7:0] bcd_output);
+
+    // Calculate the tens and ones digits of the binary input
+    wire [4:0] tens, ones;
+
+    // Compute ones digit: binary_input % 10
+    assign ones = binary_input & 9'b11111;
+
+    // Compute tens digit: binary_input / 10
+    assign tens = binary_input >> 4;
+
+    // Convert tens and ones to BCD
+    assign bcd_output = {tens, ones};
+
+endmodule
+
+----- END EXACT BLOCK 0026 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/BinaryToBCD5/result.json
+----- BEGIN EXACT BLOCK 0027: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "BinaryToBCD5",
+  "elapsed_seconds": 12.59,
+  "prompt_tokens_preflight": 213,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 213,
+    "total_tokens": 346,
+    "completion_tokens": 133,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "functional_mismatch",
+  "mismatches": 22,
+  "samples": 32,
+  "failures": []
+}
+
+----- END EXACT BLOCK 0027 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 007: SequenceDetector / SequenceDetector
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0028: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named sequence_detector in one verilog code block. Return no testbench or explanation.
+
+Implement a detector for an ordered sequence of eight 3-bit input values in Verilog.
+
+Interface: module sequence_detector(input clk, input reset_n,
+                                    input [2:0] data, output reg sequence_found).
+
+The sequence, in order, is 3'b001, 3'b101, 3'b110, 3'b000,
+3'b110, 3'b110, 3'b011, 3'b101. Sample one data value per rising clock edge.
+There is no enable port; sampling is always enabled outside reset.
+
+reset_n is active low and synchronous. At a rising edge with reset_n=0,
+clear all history and set sequence_found to 0, ignoring data at that edge.
+Changing reset_n or data between rising edges must not change sequence_found.
+
+After each non-reset rising edge, sequence_found is 1 exactly when the last
+eight values sampled since reset, including the current value, match the
+sequence. Otherwise it is 0. Fewer than eight sampled values cannot match.
+Detection is a registered one-cycle pulse, not a sticky flag. Overlapping
+matches are allowed; a trailing value can also begin a later match.
+
+----- END EXACT BLOCK 0028 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 516, "prompt_tokens": 314, "prompt_tokens_details": null, "total_tokens": 830}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/response.json
+----- BEGIN EXACT BLOCK 0029: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module sequence_detector(
+    input clk,
+    input reset_n,
+    input [2:0] data,
+    output reg sequence_found
+);
+
+    // Define the target sequence
+    localparam [2:0] seq[7] = '{3'b001, 3'b101, 3'b110, 3'b000,
+                               3'b110, 3'b110, 3'b011, 3'b101};
+
+    // State machine to track the current position in the sequence
+    reg [2:0] current_state;
+
+    // Shift register to hold the last 8 data samples
+    reg [23:0] data_shift_reg;
+
+    // Internal signal to indicate if the current data matches the expected value
+    reg match;
+
+    // Always block for clocked logic
+    always @(posedge clk) begin
+        if (!reset_n) begin
+            // Reset: clear shift register and state
+            data_shift_reg <= 24'b0;
+            current_state <= 3'b000;
+            sequence_found <= 1'b0;
+        end else begin
+            // Shift in new data
+            data_shift_reg <= {data_shift_reg[18:0], data};
+
+            // Check if current data matches the expected value for the current state
+            match = (data_shift_reg[23:20] == seq[current_state]);
+
+            // Update state if match is found
+            if (match) begin
+                current_state <= current_state + 1;
+                if (current_state == 3'b111) begin
+                    // Full sequence matched
+                    sequence_found <= 1'b1;
+                    current_state <= 3'b000;
+                end
+            end else begin
+                // No match, reset state if we've gone too far
+                if (current_state != 3'b000) begin
+                    current_state <= 3'b000;
+                end
+            end
+
+            // Clear sequence_found after one cycle
+            if (current_state == 3'b000 && data_shift_reg[23:20] == seq[0]) begin
+                sequence_found <= 1'b1;
+            end else if (current_state != 3'b000) begin
+                sequence_found <= 1'b0;
+            end
+        end
+    end
+
+endmodule
+```
+----- END EXACT BLOCK 0029 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0030: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module sequence_detector(
+    input clk,
+    input reset_n,
+    input [2:0] data,
+    output reg sequence_found
+);
+
+    // Define the target sequence
+    localparam [2:0] seq[7] = '{3'b001, 3'b101, 3'b110, 3'b000,
+                               3'b110, 3'b110, 3'b011, 3'b101};
+
+    // State machine to track the current position in the sequence
+    reg [2:0] current_state;
+
+    // Shift register to hold the last 8 data samples
+    reg [23:0] data_shift_reg;
+
+    // Internal signal to indicate if the current data matches the expected value
+    reg match;
+
+    // Always block for clocked logic
+    always @(posedge clk) begin
+        if (!reset_n) begin
+            // Reset: clear shift register and state
+            data_shift_reg <= 24'b0;
+            current_state <= 3'b000;
+            sequence_found <= 1'b0;
+        end else begin
+            // Shift in new data
+            data_shift_reg <= {data_shift_reg[18:0], data};
+
+            // Check if current data matches the expected value for the current state
+            match = (data_shift_reg[23:20] == seq[current_state]);
+
+            // Update state if match is found
+            if (match) begin
+                current_state <= current_state + 1;
+                if (current_state == 3'b111) begin
+                    // Full sequence matched
+                    sequence_found <= 1'b1;
+                    current_state <= 3'b000;
+                end
+            end else begin
+                // No match, reset state if we've gone too far
+                if (current_state != 3'b000) begin
+                    current_state <= 3'b000;
+                end
+            end
+
+            // Clear sequence_found after one cycle
+            if (current_state == 3'b000 && data_shift_reg[23:20] == seq[0]) begin
+                sequence_found <= 1'b1;
+            end else if (current_state != 3'b000) begin
+                sequence_found <= 1'b0;
+            end
+        end
+    end
+
+endmodule
+
+----- END EXACT BLOCK 0030 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/result.json
+----- BEGIN EXACT BLOCK 0031: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "SequenceDetector",
+  "elapsed_seconds": 39.574,
+  "prompt_tokens_preflight": 314,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 314,
+    "total_tokens": 830,
+    "completion_tokens": 516,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "compile_error",
+  "detail": "/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: error: localparam must have a value.\n/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: syntax error\n/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:10: error: Invalid module item.\n"
+}
+
+----- END EXACT BLOCK 0031 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/compile.stderr
+----- BEGIN EXACT BLOCK 0032: CHECKER DIAGNOSTIC / compile.stderr -----
+/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: error: localparam must have a value.
+/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:9: syntax error
+/Users/bhrugusetlur/dev/trainium-agent-labs/runs/verilog-oneshot-20261010T162234.717156Z/SequenceDetector/evaluation/candidate.sv:10: error: Invalid module item.
+
+----- END EXACT BLOCK 0032 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 008: ShiftRegister8 / ShiftRegister8
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/ShiftRegister8/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0033: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named shift_register in one verilog code block. Return no testbench or explanation.
+
+Implement an 8-bit serial-in, parallel-out right-shift register in Verilog.
+
+Interface: module shift_register(input clk, input reset_n, input data_in,
+                                 input shift_enable, output reg [7:0] data_out).
+
+Update only on rising clock edges. reset_n is active low and synchronous.
+At a rising edge with reset_n=0, set data_out to 8'h00 regardless of shift_enable.
+Otherwise, when shift_enable=1, set data_out to {data_in, data_out[7:1]}:
+the new bit enters bit 7, old bits move toward bit 0, and old bit 0 is discarded.
+When reset_n=1 and shift_enable=0, hold all eight output bits unchanged.
+Changing reset_n, data_in, or shift_enable between rising edges must not change
+data_out. The new output is visible immediately after the edge, with no extra delay.
+
+----- END EXACT BLOCK 0033 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 106, "prompt_tokens": 247, "prompt_tokens_details": null, "total_tokens": 353}
+Source: runs/verilog-oneshot-20261010T162234.717156Z/ShiftRegister8/response.json
+----- BEGIN EXACT BLOCK 0034: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module shift_register(
+    input clk,
+    input reset_n,
+    input data_in,
+    input shift_enable,
+    output reg [7:0] data_out
+);
+
+always @(posedge clk) begin
+    if (!reset_n) begin
+        data_out <= 8'h00;
+    end else begin
+        if (shift_enable) begin
+            data_out <= {data_in, data_out[7:1]};
+        end
+    end
+end
+
+endmodule
+```
+----- END EXACT BLOCK 0034 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/ShiftRegister8/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0035: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module shift_register(
+    input clk,
+    input reset_n,
+    input data_in,
+    input shift_enable,
+    output reg [7:0] data_out
+);
+
+always @(posedge clk) begin
+    if (!reset_n) begin
+        data_out <= 8'h00;
+    end else begin
+        if (shift_enable) begin
+            data_out <= {data_in, data_out[7:1]};
+        end
+    end
+end
+
+endmodule
+
+----- END EXACT BLOCK 0035 -----
+
+Source: runs/verilog-oneshot-20261010T162234.717156Z/ShiftRegister8/result.json
+----- BEGIN EXACT BLOCK 0036: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "ShiftRegister8",
+  "elapsed_seconds": 10.078,
+  "prompt_tokens_preflight": 247,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 247,
+    "total_tokens": 353,
+    "completion_tokens": 106,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "pass",
+  "mismatches": 0,
+  "samples": 8,
+  "failures": []
+}
+
+----- END EXACT BLOCK 0036 -----
+
+

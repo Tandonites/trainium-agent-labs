@@ -1,0 +1,797 @@
+========================================================================================
+EXPERIMENT: Original five-task VerilogEval one-shot baseline
+RUN: runs/verilog-oneshot-20261010T155559.456475Z
+========================================================================================
+Source: runs/verilog-oneshot-20261010T155559.456475Z/summary.json
+----- BEGIN EXACT BLOCK 0001: SAVED EXPERIMENT SUMMARY -----
+{
+  "status": "complete",
+  "passed": 2,
+  "tasks": 5,
+  "model_generation_requests": 5,
+  "results": [
+    {
+      "task": "Prob009_popcount3",
+      "elapsed_seconds": 8.93,
+      "prompt_tokens_preflight": 129,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 129,
+        "total_tokens": 215,
+        "completion_tokens": 86,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "functional_mismatch",
+      "mismatches": 59,
+      "samples": 220,
+      "failures": [
+        {
+          "signal": "out",
+          "mismatches": 59,
+          "first_time": 50
+        }
+      ]
+    },
+    {
+      "task": "Prob035_count1to10",
+      "elapsed_seconds": 12.059,
+      "prompt_tokens_preflight": 157,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 157,
+        "total_tokens": 286,
+        "completion_tokens": 129,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "pass",
+      "mismatches": 0,
+      "samples": 439,
+      "failures": []
+    },
+    {
+      "task": "Prob075_counter_2bc",
+      "elapsed_seconds": 14.226,
+      "prompt_tokens_preflight": 257,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 257,
+        "total_tokens": 421,
+        "completion_tokens": 164,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "pass",
+      "mismatches": 0,
+      "samples": 1051,
+      "failures": []
+    },
+    {
+      "task": "Prob085_shift4",
+      "elapsed_seconds": 13.952,
+      "prompt_tokens_preflight": 273,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 273,
+        "total_tokens": 430,
+        "completion_tokens": 157,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "functional_mismatch",
+      "mismatches": 81,
+      "samples": 427,
+      "failures": [
+        {
+          "signal": "q",
+          "mismatches": 81,
+          "first_time": 20
+        }
+      ]
+    },
+    {
+      "task": "Prob096_review2015_fsmseq",
+      "elapsed_seconds": 25.463,
+      "prompt_tokens_preflight": 179,
+      "tokenizer_source": "server /tokenize",
+      "usage": {
+        "prompt_tokens": 179,
+        "total_tokens": 497,
+        "completion_tokens": 318,
+        "prompt_tokens_details": null
+      },
+      "finish_reason": "stop",
+      "status": "functional_mismatch",
+      "mismatches": 175,
+      "samples": 643,
+      "failures": [
+        {
+          "signal": "start_shifting",
+          "mismatches": 175,
+          "first_time": 50
+        }
+      ]
+    }
+  ],
+  "limitations": "Five-task smoke test; public data; simulation only; no repair; no synthesis proof."
+}
+
+----- END EXACT BLOCK 0001 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 001: Prob009_popcount3 / Prob009_popcount3
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob009_popcount3/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0002: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named TopModule in one verilog code block. Return no testbench or explanation.
+
+
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  in  (3 bits)
+ - output out (2 bits)
+
+The module should implement a "population count" circuit that counts the
+number of '1's in the input vector.
+
+
+----- END EXACT BLOCK 0002 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 86, "prompt_tokens": 129, "prompt_tokens_details": null, "total_tokens": 215}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob009_popcount3/response.json
+----- BEGIN EXACT BLOCK 0003: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module TopModule (
+    input  [2:0] in,
+    output [1:0] out
+);
+    // Compute the number of '1's in the 3-bit input
+    assign out[1] = in[2] & in[1];
+    assign out[0] = in[2] ^ in[1] ^ in[0];
+endmodule
+```
+----- END EXACT BLOCK 0003 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob009_popcount3/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0004: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module TopModule (
+    input  [2:0] in,
+    output [1:0] out
+);
+    // Compute the number of '1's in the 3-bit input
+    assign out[1] = in[2] & in[1];
+    assign out[0] = in[2] ^ in[1] ^ in[0];
+endmodule
+
+----- END EXACT BLOCK 0004 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob009_popcount3/result.json
+----- BEGIN EXACT BLOCK 0005: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "Prob009_popcount3",
+  "elapsed_seconds": 8.93,
+  "prompt_tokens_preflight": 129,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 129,
+    "total_tokens": 215,
+    "completion_tokens": 86,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "functional_mismatch",
+  "mismatches": 59,
+  "samples": 220,
+  "failures": [
+    {
+      "signal": "out",
+      "mismatches": 59,
+      "first_time": 50
+    }
+  ]
+}
+
+----- END EXACT BLOCK 0005 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 002: Prob035_count1to10 / Prob035_count1to10
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob035_count1to10/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0006: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named TopModule in one verilog code block. Return no testbench or explanation.
+
+
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  reset
+ - output q (4 bits)
+
+The module should implement a decade counter that counts 1 through 10,
+inclusive. Assume all sequential logic is triggered on the positive edge
+of the clock. The reset input is active high synchronous, and should
+reset the counter to 1.
+
+
+----- END EXACT BLOCK 0006 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 129, "prompt_tokens": 157, "prompt_tokens_details": null, "total_tokens": 286}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob035_count1to10/response.json
+----- BEGIN EXACT BLOCK 0007: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module TopModule (
+    input  clk,
+    input  reset,
+    output reg [3:0] q
+);
+
+always @(posedge clk) begin
+    if (reset) begin
+        q <= 4'b0001; // Reset to 1
+    end else begin
+        if (q == 4'b1010) begin
+            q <= 4'b0001; // Roll over from 10 to 1
+        end else begin
+            q <= q + 1;
+        end
+    end
+end
+
+endmodule
+```
+----- END EXACT BLOCK 0007 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob035_count1to10/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0008: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module TopModule (
+    input  clk,
+    input  reset,
+    output reg [3:0] q
+);
+
+always @(posedge clk) begin
+    if (reset) begin
+        q <= 4'b0001; // Reset to 1
+    end else begin
+        if (q == 4'b1010) begin
+            q <= 4'b0001; // Roll over from 10 to 1
+        end else begin
+            q <= q + 1;
+        end
+    end
+end
+
+endmodule
+
+----- END EXACT BLOCK 0008 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob035_count1to10/result.json
+----- BEGIN EXACT BLOCK 0009: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "Prob035_count1to10",
+  "elapsed_seconds": 12.059,
+  "prompt_tokens_preflight": 157,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 157,
+    "total_tokens": 286,
+    "completion_tokens": 129,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "pass",
+  "mismatches": 0,
+  "samples": 439,
+  "failures": []
+}
+
+----- END EXACT BLOCK 0009 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 003: Prob075_counter_2bc / Prob075_counter_2bc
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob075_counter_2bc/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0010: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named TopModule in one verilog code block. Return no testbench or explanation.
+
+
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  areset
+ - input  train_valid
+ - input  train_taken
+ - output state (2 bits)
+
+The module should implement a two-bit saturating counter. The counter
+increments (up to a maximum of 3) when train_valid = 1 and
+train_taken = 1. It decrements (down to a minimum of 0) when
+train_valid = 1 and train_taken = 0. When not training (train_valid = 0),
+the counter keeps its value unchanged. areset is a positive edge
+triggered asynchronous reset that resets the counter to weakly not-taken
+(2'b01). Output state[1:0] is the two-bit counter value. Assume all
+sequential logic is triggered on the positive edge of the clock.
+
+
+----- END EXACT BLOCK 0010 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 164, "prompt_tokens": 257, "prompt_tokens_details": null, "total_tokens": 421}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob075_counter_2bc/response.json
+----- BEGIN EXACT BLOCK 0011: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module TopModule (
+    input  clk,
+    input  areset,
+    input  train_valid,
+    input  train_taken,
+    output reg [1:0] state
+);
+
+    always @(posedge clk or posedge areset) begin
+        if (areset) begin
+            state <= 2'b01;
+        end else begin
+            if (train_valid) begin
+                if (train_taken) begin
+                    if (state < 2'b11) begin
+                        state <= state + 1;
+                    end
+                end else begin
+                    if (state > 2'b00) begin
+                        state <= state - 1;
+                    end
+                end
+            end
+        end
+    end
+
+endmodule
+```
+----- END EXACT BLOCK 0011 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob075_counter_2bc/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0012: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module TopModule (
+    input  clk,
+    input  areset,
+    input  train_valid,
+    input  train_taken,
+    output reg [1:0] state
+);
+
+    always @(posedge clk or posedge areset) begin
+        if (areset) begin
+            state <= 2'b01;
+        end else begin
+            if (train_valid) begin
+                if (train_taken) begin
+                    if (state < 2'b11) begin
+                        state <= state + 1;
+                    end
+                end else begin
+                    if (state > 2'b00) begin
+                        state <= state - 1;
+                    end
+                end
+            end
+        end
+    end
+
+endmodule
+
+----- END EXACT BLOCK 0012 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob075_counter_2bc/result.json
+----- BEGIN EXACT BLOCK 0013: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "Prob075_counter_2bc",
+  "elapsed_seconds": 14.226,
+  "prompt_tokens_preflight": 257,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 257,
+    "total_tokens": 421,
+    "completion_tokens": 164,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "pass",
+  "mismatches": 0,
+  "samples": 1051,
+  "failures": []
+}
+
+----- END EXACT BLOCK 0013 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 004: Prob085_shift4 / Prob085_shift4
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob085_shift4/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0014: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named TopModule in one verilog code block. Return no testbench or explanation.
+
+
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  areset
+ - input  load
+ - input  ena
+ - input  data (4 bits)
+ - output q (4 bits)
+
+The module should implement a 4-bit shift register (right shift), with
+asynchronous positive edge triggered areset, synchronous active high
+signals load, and enable.
+
+  (1) areset: Resets shift register to zero.
+
+  (2) load: Loads shift register with data[3:0] instead of shifting.
+
+  (3) ena: Shift right (q[3] becomes zero, q[0] is shifted out and
+       disappears).
+
+  (4) q: The contents of the shift register. If both the load and ena
+       inputs are asserted (1), the load input has higher priority.
+
+Assume all sequential logic is triggered on the positive edge of the
+clock.
+
+
+----- END EXACT BLOCK 0014 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 157, "prompt_tokens": 273, "prompt_tokens_details": null, "total_tokens": 430}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob085_shift4/response.json
+----- BEGIN EXACT BLOCK 0015: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module TopModule (
+    input  clk,
+    input  areset,
+    input  load,
+    input  ena,
+    input  data,
+    output q
+);
+
+    // Internal 4-bit register
+    reg [3:0] reg_q;
+
+    always @(posedge clk or posedge areset) begin
+        if (areset) begin
+            reg_q <= 4'b0000;
+        end else begin
+            if (load) begin
+                reg_q <= data;
+            end else if (ena) begin
+                reg_q <= {reg_q[2:0], 1'b0};
+            end
+        end
+    end
+
+    assign q = reg_q;
+
+endmodule
+```
+----- END EXACT BLOCK 0015 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob085_shift4/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0016: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module TopModule (
+    input  clk,
+    input  areset,
+    input  load,
+    input  ena,
+    input  data,
+    output q
+);
+
+    // Internal 4-bit register
+    reg [3:0] reg_q;
+
+    always @(posedge clk or posedge areset) begin
+        if (areset) begin
+            reg_q <= 4'b0000;
+        end else begin
+            if (load) begin
+                reg_q <= data;
+            end else if (ena) begin
+                reg_q <= {reg_q[2:0], 1'b0};
+            end
+        end
+    end
+
+    assign q = reg_q;
+
+endmodule
+
+----- END EXACT BLOCK 0016 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob085_shift4/result.json
+----- BEGIN EXACT BLOCK 0017: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "Prob085_shift4",
+  "elapsed_seconds": 13.952,
+  "prompt_tokens_preflight": 273,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 273,
+    "total_tokens": 430,
+    "completion_tokens": 157,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "functional_mismatch",
+  "mismatches": 81,
+  "samples": 427,
+  "failures": [
+    {
+      "signal": "q",
+      "mismatches": 81,
+      "first_time": 20
+    }
+  ]
+}
+
+----- END EXACT BLOCK 0017 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob085_shift4/evaluation/compile.stderr
+----- BEGIN EXACT BLOCK 0018: CHECKER DIAGNOSTIC / compile.stderr -----
+/Users/bhrugusetlur/dev/trainium-agent-labs/projects/03-verilog-agent/benchmarks/verilog-eval/dataset_spec-to-rtl/Prob085_shift4_test.sv:134: warning: Port 5 (data) of TopModule expects 1 bits, got 4.
+/Users/bhrugusetlur/dev/trainium-agent-labs/projects/03-verilog-agent/benchmarks/verilog-eval/dataset_spec-to-rtl/Prob085_shift4_test.sv:134:        : Pruning 3 high bits of the expression.
+/Users/bhrugusetlur/dev/trainium-agent-labs/projects/03-verilog-agent/benchmarks/verilog-eval/dataset_spec-to-rtl/Prob085_shift4_test.sv:134: warning: Port 6 (q) of TopModule expects 1 bits, got 4.
+/Users/bhrugusetlur/dev/trainium-agent-labs/projects/03-verilog-agent/benchmarks/verilog-eval/dataset_spec-to-rtl/Prob085_shift4_test.sv:134:        : Padding 3 high bits of the expression.
+
+----- END EXACT BLOCK 0018 -----
+
+
+----------------------------------------------------------------------------------------
+ENTRY 005: Prob096_review2015_fsmseq / Prob096_review2015_fsmseq
+----------------------------------------------------------------------------------------
+REQUEST SETTINGS (messages reproduced below):
+{
+  "model": "Qwen/Qwen3-8B",
+  "n": 1,
+  "temperature": 0,
+  "top_p": 1,
+  "seed": 0,
+  "max_tokens": 2500,
+  "chat_template_kwargs": {
+    "enable_thinking": false
+  }
+}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob096_review2015_fsmseq/request.json # messages[0].content
+----- BEGIN EXACT BLOCK 0019: PROMPT MESSAGE 1 / USER -----
+Implement the following specification as a synthesizable Verilog/SystemVerilog module compatible with Icarus Verilog 12. Return exactly one complete module named TopModule in one verilog code block. Return no testbench or explanation.
+
+
+I would like you to implement a module named TopModule with the following
+interface. All input and output ports are one bit unless otherwise
+specified.
+
+ - input  clk
+ - input  reset
+ - input  data
+ - output start_shifting
+
+The module should implement a finite-state machine that searches for the
+sequence 1101 in an input bit stream. When the sequence is found, it
+should set start_shifting to 1, forever, until reset. Reset is active
+high synchronous. Assume all sequential logic is triggered on the
+positive edge of the clock.
+
+
+----- END EXACT BLOCK 0019 -----
+
+Finish reason: stop
+Server usage: {"completion_tokens": 318, "prompt_tokens": 179, "prompt_tokens_details": null, "total_tokens": 497}
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob096_review2015_fsmseq/response.json
+----- BEGIN EXACT BLOCK 0020: COMPLETE QWEN ANSWER (UNEDITED) -----
+```verilog
+module TopModule (
+    input  clk,
+    input  reset,
+    input  data,
+    output reg start_shifting
+);
+
+    typedef enum reg [2:0] {
+        S0, S1, S2, S3, S4
+    } state_t;
+
+    state_t current_state, next_state;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            current_state <= S0;
+            start_shifting <= 0;
+        end else begin
+            current_state <= next_state;
+            if (current_state == S4) begin
+                start_shifting <= 1;
+            end else begin
+                start_shifting <= 0;
+            end
+        end
+    end
+
+    always @(*) begin
+        next_state = current_state;
+        case (current_state)
+            S0: begin
+                if (data) next_state = S1;
+                else next_state = S0;
+            end
+            S1: begin
+                if (data) next_state = S2;
+                else next_state = S0;
+            end
+            S2: begin
+                if (data) next_state = S3;
+                else next_state = S0;
+            end
+            S3: begin
+                if (data) next_state = S4;
+                else next_state = S0;
+            end
+            S4: begin
+                next_state = S4;
+            end
+        endcase
+    end
+
+endmodule
+```
+----- END EXACT BLOCK 0020 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob096_review2015_fsmseq/evaluation/candidate.sv
+----- BEGIN EXACT BLOCK 0021: GENERATED VERILOG MODULE AS EVALUATED (UNEDITED) -----
+module TopModule (
+    input  clk,
+    input  reset,
+    input  data,
+    output reg start_shifting
+);
+
+    typedef enum reg [2:0] {
+        S0, S1, S2, S3, S4
+    } state_t;
+
+    state_t current_state, next_state;
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            current_state <= S0;
+            start_shifting <= 0;
+        end else begin
+            current_state <= next_state;
+            if (current_state == S4) begin
+                start_shifting <= 1;
+            end else begin
+                start_shifting <= 0;
+            end
+        end
+    end
+
+    always @(*) begin
+        next_state = current_state;
+        case (current_state)
+            S0: begin
+                if (data) next_state = S1;
+                else next_state = S0;
+            end
+            S1: begin
+                if (data) next_state = S2;
+                else next_state = S0;
+            end
+            S2: begin
+                if (data) next_state = S3;
+                else next_state = S0;
+            end
+            S3: begin
+                if (data) next_state = S4;
+                else next_state = S0;
+            end
+            S4: begin
+                next_state = S4;
+            end
+        endcase
+    end
+
+endmodule
+
+----- END EXACT BLOCK 0021 -----
+
+Source: runs/verilog-oneshot-20261010T155559.456475Z/Prob096_review2015_fsmseq/result.json
+----- BEGIN EXACT BLOCK 0022: SAVED RESULT FOR THIS ANSWER -----
+{
+  "task": "Prob096_review2015_fsmseq",
+  "elapsed_seconds": 25.463,
+  "prompt_tokens_preflight": 179,
+  "tokenizer_source": "server /tokenize",
+  "usage": {
+    "prompt_tokens": 179,
+    "total_tokens": 497,
+    "completion_tokens": 318,
+    "prompt_tokens_details": null
+  },
+  "finish_reason": "stop",
+  "status": "functional_mismatch",
+  "mismatches": 175,
+  "samples": 643,
+  "failures": [
+    {
+      "signal": "start_shifting",
+      "mismatches": 175,
+      "first_time": 50
+    }
+  ]
+}
+
+----- END EXACT BLOCK 0022 -----
+
+
