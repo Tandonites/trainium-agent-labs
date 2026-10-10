@@ -1,5 +1,101 @@
 # Generic Markdown experiments
 
+## Measurement API and feedback contract
+
+The new entry points are independent of the model client:
+
+```python
+import checker
+import feedback
+
+problem = checker.load_problem("prompts/specs/LFSR.md",
+    "TestBench/lfsr_tb.v", "verilog/reference/lfsr.v")
+result = checker.check(problem, "candidate.v", work_dir="runs/check-001",
+                       partition="visible", finish_reason="stop")
+record = feedback.feedback_record(result, "C")
+text_for_model = record["text"]
+# Save record with the runner's attempt log. format_feedback() returns text only.
+```
+
+`work_dir` must be new. Separate calls use separate build files and can run
+concurrently. Each directory preserves the exact candidate, assembled public
+specification, supplied reference/testbench copies, generated probe, compiler and
+simulator stdout/stderr, and `result.json`. The manifest records input and checker
+source hashes. This single-file interface does not package external include-file
+dependencies; supply self-contained task files.
+
+`result` is a JSON object. Its principal fields are:
+
+| Field | Meaning |
+| --- | --- |
+| `status`, `passed`, `compiled` | Acceptance and compilation results, kept separate. |
+| `port_errors` | Expected versus elaborated names, directions, and widths. Missing ports may instead prevent compilation. |
+| `samples`, `passed_samples`, `failed_samples` | Checked observations, including between-edge reset checks. An observation is not always a new clock cycle. |
+| `output_checks`, `mismatches`, `passed_output_checks` | Output/observation pairs. Two wrong outputs at one observation count as two mismatches and one failed sample. |
+| `observations` | Every observation: sample index, cycle, time in ns, input bits including clock/reset, expected constraints, actual bits, failed output names, and check categories. |
+| `weighted_score` | Sean's legacy sum of passing category weights; **not** a passed-cycle percentage. |
+| `source_locations` | Compiler-named candidate lines or output-driving blocks, bound to the candidate hash. Driver locations are investigation leads, not measured root causes. |
+| `signatures`, `category_checks` | Failure categories for optional lesson selection and analysis. |
+
+Expected values retain their widths. Unknown actual bits remain X/Z. Dice-style
+contracts retain `defined`, `range`, or `hold` expectations rather than inventing
+one correct random output. Setup observations that have no scored check category
+remain in the trace with `checked=false` and are excluded from counts.
+
+Failure statuses distinguish invalid candidates, truncated responses, port errors,
+compile errors/timeouts, simulation errors/timeouts, incomplete simulation,
+functional mismatch, official-testbench failure, reference errors, and infrastructure
+errors. Simulator nonzero exits and ERROR/FATAL/FAIL messages cannot produce a pass.
+The probe requires every expected observation exactly once and one completion
+record. Port validation reads Icarus 12's elaborated VVP metadata; unavailable or
+unrecognized metadata stops checking. Signedness is not represented in the current
+task-port schema. No synthesis or formal-correctness claim is made.
+
+The legacy `grade()` return value remains `(weighted_score, feedback_text)`.
+Both APIs receive the acceptance fixes. The original testbench and the generated
+probe are visible checks here; this interface does not create a hidden test set.
+For a final verdict, supply a separately frozen problem/test plan to `check()` with
+`partition="hidden"`. Every feedback style rejects results carrying that label.
+Hidden evaluation must run only after the runner has selected its final candidate.
+
+| Style | Model-facing evidence |
+| --- | --- |
+| A | Status and complete mismatch totals. |
+| B | A plus up to three representative failing observations. |
+| C | B plus up to three preceding checked observations for each example. |
+| D | C plus compiler locations or output-driver lines. Pass `candidate_source=...`; stale source is rejected. |
+| E | C plus at most two lessons from an explicitly supplied `FrozenLookup`. |
+
+The limits are explicit `max_examples` and `preceding` arguments. These are
+deterministic evidence selections, not a tokenizer-based context limit. The runner
+must keep the specification and candidate intact and count the assembled prompt
+with Qwen's tokenizer before sending it. D and E are separate additions to C so
+line pointers and reusable lessons can be compared independently.
+
+For E, construct `lookup = feedback.FrozenLookup("feedback_rules.json")` before
+the experiment and pass it to `feedback_record`. The file must declare its version,
+development tasks, and rules. The lookup keeps a frozen copy; file edits do not
+change subsequent feedback. The returned record includes the rules selected,
+version, hash, and development-task attribution. LFSR and sequence generator must
+remain development tasks for the included reset rules. A–D never retrieve lessons
+and reject a supplied lookup. No experiments establish that E improves repairs yet.
+
+The returned feedback record also lists the sample and source-line identifiers
+shown. It does not modify the checker result or silently mix in the legacy feedback.
+Infrastructure and reference errors are refused as repair feedback.
+
+Run all CPU-only tests with:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+The new tests exercise exact interfaces, real simulation timeout, failed processes,
+incomplete/duplicate reports, multi-output counts, X/Z preservation, hidden-result
+rejection, stale source, immutable lessons, concurrency, and the offline CLI.
+
+## Existing runner
+
 Run the four prepared tasks (LFSR, sequence generator, traffic light, dice roller):
 
 ```sh

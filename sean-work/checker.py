@@ -6,9 +6,10 @@ every output against a Python model or a Verilog reference driven by the same in
 A 1.0 also requires the official testbench to pass when one is available.
 
 What the feedback says: for each failed check, the REQUIREMENT that check enforces and
-what was OBSERVED (signal, time or cycle, which bits are wrong). It never prints the
-expected value and never suggests code. The reference design and reference model are
-used only to grade and to self-test the checker; the model never sees them.
+what was OBSERVED (signal, time or cycle, which bits are wrong). The legacy grade()
+text omits expected values. check() additionally returns full measurements for the
+separate A–E feedback writer, which may disclose visible expected values. Reference
+source is never included in that feedback.
 
 Problem definitions supply ports, reset behavior, reference models, stimulus
 segments, feedback requirements, and weights. The probe and grader interpret this
@@ -18,6 +19,7 @@ data without dispatching to a problem-specific checker.
 import copy, json, random, re, subprocess, pathlib, sys, time, hashlib, contextlib, shutil
 from datetime import datetime, timezone
 import taxonomy
+import check_result
 
 # ---- model-facing prompt construction; the agent only transports messages ----
 
@@ -492,6 +494,7 @@ def _probe(p):
     lines.append('  initial begin')
     samples, now, edge_count = [], 0, 0
     transitions = {}
+    reset_level = 1 - act
 
     def emit(text, delay=0):
         nonlocal now
@@ -519,9 +522,15 @@ def _probe(p):
         context = [f"{edge_count - since} cycle{'s' if edge_count - since != 1 else ''} after {name} "
                    + ("went low" if value == 0 else "went high" if value == 1 else "changed")
                    for name, (since, value) in transitions.items()]
+        pin_inputs = {name: f'{inputs[name]:0{width}b}' for name, direction, width in p['ports']
+                      if direction == 'input' and name not in (p['clock'], rst)}
+        if p['clock']:
+            pin_inputs[p['clock']] = '0' if kind in ('initial_immediate', 'reset') and subcheck == 0 else '1'
+        if rst:
+            pin_inputs[rst] = str(reset_level)
         samples.append(dict(checks=checks, want=model["output"](state) if model else {}, when=when,
                             time=now, kind=kind, cycle=cycle, subcheck=subcheck,
-                            edge=edge_count, context=context, inputs=dict(inputs),
+                            edge=edge_count, context=context, inputs=dict(inputs), pin_inputs=pin_inputs,
                             requirements=requirements or {}, observed=observed,
                             previous=model["output"](state if previous is None else previous) if model else {},
                             following=model["output"](state if following is None else following) if model else {}))
@@ -539,12 +548,13 @@ def _probe(p):
         emit(f"{clk} = 0;", 4)
 
     def reset(check=None, initial=False, values=None):
-        nonlocal state
+        nonlocal state, reset_level
         if values is not None:
             drive(values)
         if not rst:
             return
         emit(f"{rst} = {act};", 1)
+        reset_level = act
         emit("", 1)
         if p["async_reset"]:
             if model:
@@ -560,6 +570,7 @@ def _probe(p):
                  held=True, rise_delay=3 if i == 0 else 4,
                  kind="initial_value" if initial else "reset", subcheck=1)
         emit(f"{rst} = {1 - act};", 1)
+        reset_level = 1 - act
 
     reset(initial=True)
     for segment in p["segments"]:
@@ -577,7 +588,7 @@ def _probe(p):
             emit("", 1)
 
     if not rst:
-        lines.extend(['    $finish;', '  end', 'endmodule'])
+        lines.extend([f'    $display("CHECKER_DONE {len(samples)}");', '    $finish;', '  end', 'endmodule'])
         return '\n'.join(lines) + '\n', samples
 
     # Reset away from the reset state, even if the run ends exactly at a wrap.
@@ -597,7 +608,7 @@ def _probe(p):
         edge(("reset_midrun",), f"at restart cycle {i} after reset release",
              kind="restart", cycle=i, subcheck=i + 1)
         emit("", 1)
-    lines.extend(['    $finish;', '  end', 'endmodule'])
+    lines.extend([f'    $display("CHECKER_DONE {len(samples)}");', '    $finish;', '  end', 'endmodule'])
     return '\n'.join(lines) + '\n', samples
 
 
@@ -721,7 +732,7 @@ def file_problem(spec, tb, ref, *, seed=0, async_reset=True, cycles=256, random_
                 observations={}, weights=weights, include_context=True, seed=seed)
 
 
-def _reference_copy(p, tag):
+def _reference_copy(p, tag, directory=None):
     """Give the reference top a private name so identical DUT module names coexist."""
     source = _without_comments(pathlib.Path(p['ref_verilog']).read_text())
     modules = re.findall(r'\bmodule\s+(\w+)', source)
@@ -730,7 +741,7 @@ def _reference_copy(p, tag):
     name = p.get('ref_module', p['module'] if p['module'] in modules else modules[0])
     source = re.sub(r'(\bmodule\s+)' + re.escape(name) + r'\b',
                     r'\1_checker_reference', source, count=1)
-    path = BUILD / f'{tag}_reference.v'
+    path = (pathlib.Path(directory) if directory is not None else BUILD) / f'{tag}_reference.v'
     path.write_text(source)
     return path
 
@@ -913,21 +924,31 @@ def _v2_observation(signature, width):
         upper=width - width // 2, lower=width // 2)
 
 
-def _official_ok(tb_path, dut_path, tag, timeout):
+def _official_ok(tb_path, dut_path, tag, timeout, *, directory=None):
     """True/False from the benchmark's own testbench; None if it is not present."""
     if not tb_path or not pathlib.Path(tb_path).exists():
         return None
-    exe = BUILD / f"{tag}_official.vvp"
-    c = subprocess.run(["iverilog", "-g2012", "-I", str(pathlib.Path(tb_path).resolve().parent),
+    build = pathlib.Path(directory) if directory is not None else BUILD
+    exe = build / f"{tag}_official.vvp"
+    try:
+        c = subprocess.run(["iverilog", "-g2012", "-I", str(pathlib.Path(tb_path).resolve().parent),
                        "-I", str(pathlib.Path(dut_path).resolve().parent),
                        "-o", str(exe), str(tb_path), str(dut_path)],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        check_result.save_process(build, f'{tag}_official_compile', error)
+        return False
+    check_result.save_process(build, f'{tag}_official_compile', c)
     if c.returncode != 0:
         return False
     try:
-        r = subprocess.run(["vvp", str(exe.resolve())], cwd=BUILD,
+        r = subprocess.run(["vvp", str(exe.resolve())], cwd=build,
                            capture_output=True, text=True, timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except subprocess.TimeoutExpired as error:
+        check_result.save_process(build, f'{tag}_official_simulation', error)
+        return False
+    check_result.save_process(build, f'{tag}_official_simulation', r)
+    if check_result.failed_process(r):
         return False
     lines = r.stdout.splitlines()
     if any(FAIL_RE.search(l) for l in lines):
@@ -1042,7 +1063,7 @@ def _v1_signatures(parts, rows, facts, midrun_failure):
 
 def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
           principles=False, async_reset=None, diagnostics=None, taxonomy_path=None, knowledge_path=None,
-          categories=(), max_rules=2):
+          categories=(), max_rules=2, result=None, work_dir=None):
     p = copy.deepcopy(_problem(problem_name))
     if async_reset is not None and async_reset != p["async_reset"]:
         p["async_reset"] = async_reset
@@ -1060,24 +1081,47 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
     if diagnostics is not None:
         diagnostics.clear()
         diagnostics.update(signatures=[], checks={}, mismatches=[], categories=list(categories))
+    measured = result if result is not None else {}
+    measured.update(status='checking', compiled=False, port_errors=[], observations=[],
+                    source_locations=[], samples=0, output_checks=0, mismatches=0,
+                    failed_samples=0, passed_samples=0, passed_output_checks=0)
+    def reject(status, detail, score=0., signature=None):
+        measured.update(status=status, detail=detail)
+        if diagnostics is not None and signature:
+            diagnostics['signatures'] = [signature]
+        return score, _with_principles(detail, [signature] if signature else [], **options)
+    candidate_source = pathlib.Path(dut_path).read_text()
+    invalid = check_result.candidate_error(candidate_source, p['module'])
+    if invalid:
+        return reject('invalid_candidate', invalid)
     weights = p["weights"]
     if abs(sum(weights.values()) - 1.0) > 1e-12:
         raise ValueError("problem weights must sum to 1.0")
     if not p["async_reset"] and "reset_immediate" in weights:
         raise ValueError("synchronous reset must not weight reset_immediate")
     tag = pathlib.Path(dut_path).stem
+    build = pathlib.Path(work_dir) if work_dir is not None else BUILD
     source, samples = _probe(p)
-    probe = BUILD / f"{tag}_probe.v"
+    probe = build / f"{tag}_probe.v"
     probe.write_text(source)
-    exe = BUILD / f"{tag}_probe.vvp"
+    exe = build / f"{tag}_probe.vvp"
     sources = [str(probe), str(dut_path)]
     if p.get("ref_verilog"):
-        sources.append(str(_reference_copy(p, tag)))
+        sources.append(str(_reference_copy(p, tag, build)))
     include_dirs = ['-I', str(pathlib.Path(dut_path).resolve().parent)]
     if p.get('ref_verilog'):
         include_dirs += ['-I', str(pathlib.Path(p['ref_verilog']).resolve().parent)]
-    c = subprocess.run(["iverilog", "-g2012", *include_dirs, "-s", "probe", "-o", str(exe),
-                        *sources], capture_output=True, text=True)
+    command = ["iverilog", "-g2012", *include_dirs, "-s", "probe", "-o", str(exe), *sources]
+    measured['compile_command'] = command
+    try:
+        c = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        check_result.save_process(build, f'{tag}_compile', error)
+        return reject('compile_timeout', 'The compiler did not finish.', signature='TIMEOUT')
+    check_result.save_process(build, f'{tag}_compile', c)
+    measured['compile_returncode'] = c.returncode
+    measured['compiler_diagnostics'] = c.stderr
+    measured['source_locations'] = check_result.compiler_locations(c.stderr, dut_path, candidate_source)
     outputs = [(name, width) for name, direction, width in p["ports"] if direction == "output"]
     if c.returncode != 0:
         ports = [name + (f"[{width - 1}:0]" if width > 1 else "")
@@ -1085,32 +1129,52 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
         port_text = ', '.join(ports[:-1]) + ' and ' + ports[-1]
         feedback = (f"compiles: requirement: a module named `{p['module']}` with ports "
                     f"{port_text} that compiles. Observed: compiler output:\n" + c.stderr.strip()[:1200])
-        if diagnostics is not None:
-            diagnostics['signatures'] = ['COMPILE_ERROR']
-        return 0.0, _with_principles(feedback, ["COMPILE_ERROR"], **options)
+        return reject('compile_error', feedback, signature='COMPILE_ERROR')
+    measured['compiled'] = True
     try:
-        r = subprocess.run(["vvp", str(exe)], capture_output=True, text=True, timeout=timeout)
-    except subprocess.TimeoutExpired:
+        errors = check_result.port_errors(exe, p['ports'], p['module'])
+    except (OSError, ValueError) as error:
+        return reject('infrastructure_error', str(error))
+    measured['port_errors'] = errors
+    if errors:
+        return reject('port_error', 'Candidate ports disagree with the task: ' + json.dumps(errors))
+    try:
+        r = subprocess.run(["vvp", str(exe.resolve())], cwd=build,
+                           capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        check_result.save_process(build, f'{tag}_simulation', error)
         feedback = ("timeout: requirement: the simulation must finish. "
                     "Observed: it never finished.")
-        if diagnostics is not None:
-            diagnostics['signatures'] = ['TIMEOUT']
-        return weights["compiles"], _with_principles(feedback, ["TIMEOUT"], **options)
+        return reject('simulation_timeout', feedback, weights['compiles'], 'TIMEOUT')
+    check_result.save_process(build, f'{tag}_simulation', r)
+    measured['simulation_returncode'] = r.returncode
+    if check_result.failed_process(r):
+        return reject('simulation_error', 'Simulator reported an error; see the saved stdout/stderr.', weights['compiles'])
 
     rows, ref_rows = {}, {}
     reference = bool(p.get("ref_verilog"))
     count = len(outputs)
     for line in r.stdout.splitlines():
         fields = line.split()
-        if len(fields) == count * (2 if reference else 1) + 2 and fields[0] == "P" and fields[1].isdigit():
+        if fields[:1] == ['P']:
+            if len(fields) != count * (2 if reference else 1) + 2 or not fields[1].isdigit():
+                return reject('incomplete_simulation', 'Malformed observation record.', weights['compiles'])
             number = int(fields[1])
+            if number in rows or not 0 <= number < len(samples):
+                return reject('incomplete_simulation', 'Duplicate or unexpected observation.', weights['compiles'])
+            if any(len(value) != width or set(value.lower()) - set('01xz')
+                   for value, (_, width) in zip(fields[2:2 + count], outputs)):
+                return reject('incomplete_simulation', 'Malformed output bits.', weights['compiles'])
             rows[number] = dict(zip((name for name, _ in outputs), fields[2:2 + count]))
             if reference:
                 values = fields[2 + count:]
                 if any(len(value) != width or set(value) - set("01")
                        for value, (_, width) in zip(values, outputs)):
-                    return 0.0, "reference: requirement: reference outputs must be defined. Observed: the reference produced an undefined or invalid sample."
+                    return reject('reference_error', "reference: requirement: reference outputs must be defined. Observed: the reference produced an undefined or invalid sample.")
                 ref_rows[number] = dict(zip((name for name, _ in outputs), (int(value, 2) for value in values)))
+    completions = [line for line in r.stdout.splitlines() if line.startswith('CHECKER_DONE')]
+    if len(rows) != len(samples) or completions != [f'CHECKER_DONE {len(samples)}']:
+        return reject('incomplete_simulation', 'Missing complete, unique observation and completion records.', weights['compiles'])
 
     parts = dict.fromkeys(weights, True)
     failures = {}
@@ -1118,6 +1182,9 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
     v2_ids, pattern_lines = [], []
     midrun_failure = None
     for number, sample in enumerate(samples):
+        observation = check_result.observation(sample, number, outputs, rows, ref_rows, p,
+                                                samples[number - 1] if number else None)
+        measured['observations'].append(observation)
         for out, width in outputs:
             got = rows.get(number, {}).get(out, "")
             want = ref_rows.get(number, {}).get(out, 0) if reference else sample["want"][out]
@@ -1128,6 +1195,8 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
                            if comparison else _describe(got, want, width))
             if description is None:
                 continue
+            if sample['checks']:
+                observation['failures'].append(out)
             new_checks = [check for check in sample["checks"] if check not in failures]
             for check in new_checks:
                 parts[check] = False
@@ -1179,10 +1248,17 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
                     pattern_lines.extend(_v2_observation(signature, width) for signature in ids)
 
     score = round(sum(weight for check, weight in weights.items() if parts[check]), 3)
+    check_result.totals(measured)
+    check_result.source_locations(measured, candidate_source, fact_data)
+    measured['status'] = 'pass' if measured['mismatches'] == 0 else 'functional_mismatch'
     if diagnostics is not None:
         diagnostics['checks'] = parts.copy()
     if all(parts.values()):
-        if _official_ok(p["official"], dut_path, tag, timeout) is False:
+        official_options = {'directory': build} if work_dir is not None else {}
+        verdict = _official_ok(p["official"], dut_path, tag, timeout, **official_options)
+        measured['official_pass'] = verdict
+        if verdict is False:
+            measured['status'] = 'official_failure'
             return 0.9, ("official: requirement: the benchmark testbench must pass. "
                          "Observed: the benchmark testbench failed.")
         return 1.0, "correct"
@@ -1213,6 +1289,67 @@ def grade(problem_name, dut_path, timeout=30, *, facts=True, detectors=False,
         diagnostics['signatures'] = list(dict.fromkeys(v1_ids + semantic_ids + v2_ids))
     messages = [failures[check] for check in weights if check in failures]
     return score, _with_principles("\n".join(messages + pattern_lines), v1_ids + semantic_ids, v2_ids, **options)
+
+
+def check(problem, dut_path, *, work_dir, partition='visible', timeout=30, finish_reason=None):
+    """Check one saved candidate once and return JSON-serializable measurements.
+
+    Each call owns a new evidence directory; it never overwrites a prior check.
+    A hidden problem must supply its own test plan. The partition label does not
+    create new tests; feedback.format_feedback refuses hidden results.
+    """
+    if partition not in ('visible', 'hidden'):
+        raise ValueError('partition must be visible or hidden')
+    if timeout <= 0:
+        raise ValueError('timeout must be positive')
+    directory = pathlib.Path(work_dir).resolve()
+    directory.mkdir(parents=True, exist_ok=False)
+    p = copy.deepcopy(_problem(problem))
+    specification = public_spec(p)
+    source = pathlib.Path(dut_path).read_text()
+    candidate = directory / 'candidate.v'
+    candidate.write_text(source)
+    artifacts = {}
+    for key, filename in (('ref_verilog', 'reference.v'), ('official', 'testbench.v')):
+        if p.get(key):
+            path = pathlib.Path(p[key])
+            if not path.is_absolute() and not path.exists():
+                path = ROOT / path
+            content = path.read_bytes()
+            archived = directory / filename
+            archived.write_bytes(content)
+            artifacts[key] = dict(original=str(path.resolve()), sha256=hashlib.sha256(content).hexdigest())
+            p[key] = str(archived)
+    (directory / 'spec.txt').write_text(specification)
+    ports = [dict(name=name, direction=direction, width=width) for name, direction, width in p['ports']]
+    result = dict(schema_version=1, task=p['module'], partition=partition,
+                  candidate_sha256=check_result.digest(source), specification_sha256=check_result.digest(specification),
+                  ports=ports, evidence_dir=str(directory), finish_reason=finish_reason,
+                  observations=[], source_locations=[], compiled=False, port_errors=[],
+                  samples=0, output_checks=0, mismatches=0, failed_samples=0, passed_samples=0,
+                  passed_output_checks=0)
+    manifest = dict(task=p['module'], partition=partition, ports=ports, seed=p.get('seed'),
+                    candidate_sha256=result['candidate_sha256'], specification_sha256=result['specification_sha256'],
+                    artifacts=artifacts, source_sha256={name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+                        for name in ('checker.py', 'check_result.py', 'taxonomy.py')})
+    (directory / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    diagnostics = {}
+    if finish_reason == 'length':
+        result.update(status='truncated', detail='Generation reached its output limit; candidate was not scored.')
+        score = 0.
+    else:
+        try:
+            score, _ = grade(p, candidate, timeout, facts=False, detectors=False,
+                             principles=False, diagnostics=diagnostics, result=result, work_dir=directory)
+        except OSError as error:
+            result.update(status='infrastructure_error', detail=str(error))
+            score = 0.
+    result['weighted_score'] = score
+    result['signatures'] = diagnostics.get('signatures', [])
+    result['category_checks'] = diagnostics.get('checks', {})
+    result['passed'] = result['status'] == 'pass'
+    (directory / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
+    return result
 
 
 # ---- individual and batch execution; all runners stay in Python ----
