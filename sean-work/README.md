@@ -4,6 +4,32 @@ Run commands from `/workspace/sean-work`. Python 3 and Icarus Verilog (`iverilog
 and `vvp`) are required. Generation also requires a running model endpoint,
 selected with `--base-url` or `KERNEL_AGENT_BASE_URL`.
 
+## Independent feedback styles A–E
+
+`checker.check()` returns detailed measurements. `feedback.format_feedback()`
+turns those measurements into a selected feedback style. The existing `agent.py`
+continues to use its legacy feedback; the new interface is ready for the shared
+runner to call without copying prompt logic into the checker.
+
+Try the saved reset bug locally, with no model request:
+
+```sh
+python feedback.py --problem lfsr --dut candidates/bad/lfsr_syncreset.v \
+  --style C --output-dir runs/feedback-demo
+```
+
+Use a new output directory for every call. Exit 1 means the candidate failed;
+the evidence directory still contains its complete result and feedback. Exit 2
+reports an infrastructure/reference problem. A passing candidate returns 0.
+
+Styles: **A** totals; **B** adds failing inputs and expected/actual outputs;
+**C** adds preceding checked observations; **D** adds supported source locations;
+**E** adds lookup lessons to C. Only E accepts `--rules feedback_rules.json`.
+That small, versioned rule set contains two reset lessons informed by LFSR and
+sequence-generator development work. The larger legacy knowledge table remains
+separate. See [CHECKER.md](CHECKER.md#measurement-api-and-feedback-contract) for
+the API, exact counting rules, evidence, and limits.
+
 Generate **one attempt and test it**:
 
 ```sh

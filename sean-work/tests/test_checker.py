@@ -184,7 +184,10 @@ endmodule
         cases = [([failed], 0.0, "COMPILE_ERROR"),
                  ([compiled, subprocess.TimeoutExpired("vvp", 1)], 0.1, "TIMEOUT")]
         for responses, score, signature in cases:
-            with mock.patch.object(checker.subprocess, "run", side_effect=responses):
+            # The mocked compiler produces no VVP file; interface behavior is
+            # exercised with real compilation in test_feedback.py.
+            with mock.patch.object(checker.subprocess, "run", side_effect=responses), \
+                 mock.patch.object(checker.check_result, 'port_errors', return_value=[]):
                 result, feedback = self.grade(TB, REFERENCE)
             self.assertEqual(result, score)
             self.assertEqual(self.patterns(feedback), [])
